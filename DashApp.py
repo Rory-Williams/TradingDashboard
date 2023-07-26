@@ -31,39 +31,57 @@ StratTradingDf = TradingData(csv_path, 0)
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 app.layout = html.Div([
-    html.H1('BTC vs USDT'),
-    html.H4('Select number of hours of data to show (0 for all data):'),
-    html.Div(children=[
-        dcc.Input(
-                id="df_num_hours", type="number",
-                debounce=True, placeholder="Num hours of data",
-                value=initial_slice, style={'margin': '20px'},
-            ),
-    ], style={'display': 'inline', 'padding': '20px'}),
+    html.H1('BTC vs USDT', style={'padding': '20px'}),
 
-    #  VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES
-    html.H4('Edit data range:'),
     html.Div(children=[
-        dcc.RangeSlider(
-            min=TradingDf.df.index[0],
-            max=TradingDf.df.index[-1],
-            value=[TradingDf.df.index[0], TradingDf.df.index[-1]],
-            marks=TradingDf.date_dict,
-            pushable=True,
-            id='timeframe-slider',
-        ),
-    ], style={'display': 'inline', 'padding': '10px'}),
-    html.H4('Edit visual data range:'),
-    html.Div(children=[
-        dcc.RangeSlider(
-            min=TradingDf.df.index[0],
-            max=TradingDf.df.index[-1],
-            value=[TradingDf.df.index[0], TradingDf.df.index[-1]],
-            marks=TradingDf.date_dict,
-            pushable=True,
-            id='visframe-slider'
-        ),
-    ], style={'display': 'inline', 'padding': '10px'}),
+        #  DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE
+        html.Div(children=[
+            html.H4('Select number of hours of data to show (0 for all data):' ),
+            dcc.Input(
+                    id="df_num_hours", type="number",
+                    debounce=True, placeholder="Num hours of data",
+                    value=initial_slice, style={'margin': '20px'},
+                ),
+        ], style={'grid-column': '1', 'grid-row': '1', 'padding': '5px', 'display': 'inline'}),
+        html.Div(children=[
+            html.H4('Or select date range to check strategy:'),
+            dcc.DatePickerRange(
+                id='graph-date-range',
+                display_format='Y-M-D',
+                min_date_allowed=TradingDf.raw_df['Open time'].iloc[0],
+                max_date_allowed=TradingDf.raw_df['Open time'].iloc[-1],
+                start_date=TradingDf.raw_df['Open time'].iloc[-13559],
+                end_date=TradingDf.raw_df['Open time'].iloc[-1],
+                style={'padding': '5px'},
+            ),
+        ], style={'grid-column': '1', 'grid-row': '2', 'padding': '5px', 'display': 'inline'}),
+
+
+        #  VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES
+        html.Div(children=[
+            html.H4('Edit data range:'),
+            dcc.RangeSlider(
+                min=TradingDf.df.index[0],
+                max=TradingDf.df.index[-1],
+                value=[TradingDf.df.index[0], TradingDf.df.index[-1]],
+                marks=TradingDf.date_dict,
+                pushable=True,
+                id='timeframe-slider',
+            ),
+        ], style={'grid-column-start': '2', 'grid-column-end': '12', 'grid-row': '1'}),
+
+        html.Div(children=[
+            html.H4('Edit visual data range:'),
+            dcc.RangeSlider(
+                min=TradingDf.df.index[0],
+                max=TradingDf.df.index[-1],
+                value=[TradingDf.df.index[0], TradingDf.df.index[-1]],
+                marks=TradingDf.date_dict,
+                pushable=True,
+                id='visframe-slider'
+            ),
+        ], style={'grid-column-start': '2', 'grid-column-end': '12', 'grid-row': '2'}),
+    ], style={'display': 'grid', 'gap': '10px', 'width': '100%', 'margin-bottom': '25px', 'padding': '10px'}),
 
     #  MA GRAPH RANGE    MA GRAPH RANGE    MA GRAPH RANGE    MA GRAPH RANGE    MA GRAPH RANGE    MA GRAPH RANGE    MA GRAPH RANGE
     html.H4('Edit MA range (hrs):'),
@@ -150,10 +168,10 @@ app.layout = html.Div([
                 # max_date_allowed=time.mktime(df['Open time'].iloc[-1].timetuple()),
                 # start_date=time.mktime(df['Open time'].iloc[0].timetuple()),
                 # end_date=time.mktime(df['Open time'].iloc[-1].timetuple())
-                min_date_allowed=TradingDf.raw_df['Open time'].iloc[0],
-                max_date_allowed=TradingDf.raw_df['Open time'].iloc[-1],
-                start_date=TradingDf.raw_df['Open time'].iloc[-13559],
-                end_date=TradingDf.raw_df['Open time'].iloc[-1],
+                min_date_allowed=StratTradingDf.raw_df['Open time'].iloc[0],
+                max_date_allowed=StratTradingDf.raw_df['Open time'].iloc[-1],
+                start_date=StratTradingDf.raw_df['Open time'].iloc[-13559],
+                end_date=StratTradingDf.raw_df['Open time'].iloc[-1],
                 style={'padding': '5px', 'grid-column': '2', 'grid-row': '1'},
             ),
             html.P(style={'padding': '5px', 'grid-column-start': '4', 'grid-column-end': '12', 'grid-row': '0'}),
@@ -307,7 +325,7 @@ app.layout = html.Div([
             storage_type='local',
             data={},
     ),
-])
+], style={'justify-content': 'center', 'align-items': 'center', 'text-align': 'center'})
 
 get_callbacks(app, TradingDf, StratTradingDf)
 

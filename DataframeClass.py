@@ -104,8 +104,8 @@ class TradingData:
         previous_long = self.df['MA_Long'].shift(1)
 
         # create and assign crossings in new transaction column
-        self.df.loc[(self.df['EMA_Short'] >= self.df['EMA_Long']) & (previous_short <= previous_long), 'transactions'] = 'Pos Cross'
-        self.df.loc[(self.df['EMA_Short'] <= self.df['EMA_Long']) & (previous_short >= previous_long), 'transactions'] = 'Neg Cross'
+        self.df.loc[(self.df['MA_Short'] >= self.df['MA_Long']) & (previous_short <= previous_long), 'transactions'] = 'Pos Cross'
+        self.df.loc[(self.df['MA_Short'] <= self.df['MA_Long']) & (previous_short >= previous_long), 'transactions'] = 'Neg Cross'
 
 
         if len(trade_strat_dict) > 0:  # running with stop loss
