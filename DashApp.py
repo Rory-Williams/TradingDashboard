@@ -33,17 +33,33 @@ app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 app.layout = html.Div([
     html.H1('BTC vs USDT', style={'padding': '20px'}),
 
-    html.Div(children=[
+    html.Div(className='row', children=[
         #  DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE
-        html.Div(children=[
+        html.Div(className='col-sm-4', children=[
             html.H4('Select number of hours of data to show (0 for all data):' ),
             dcc.Input(
                     id="df_num_hours", type="number",
                     debounce=True, placeholder="Num hours of data",
                     value=initial_slice, style={'margin': '20px'},
                 ),
-        ], style={'grid-column': '1', 'grid-row': '1', 'padding': '5px', 'display': 'inline'}),
-        html.Div(children=[
+        ], style={'padding': '5px', 'display': 'inline'}),
+
+        html.Div(className='col-sm-8', children=[
+            html.H4('Edit data range:'),
+            dcc.RangeSlider(
+                min=TradingDf.df.index[0],
+                max=TradingDf.df.index[-1],
+                value=[TradingDf.df.index[0], TradingDf.df.index[-1]],
+                marks=TradingDf.date_dict,
+                pushable=True,
+                id='timeframe-slider',
+            ),
+        ], style={}),
+    ], style={'width': '100%', 'margin-bottom': '25px', 'padding': '10px'}),
+
+        #  VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES
+    html.Div(className='row', children=[
+        html.Div(className='col-sm-4', children=[
             html.H4('Or select date range to check strategy:'),
             dcc.DatePickerRange(
                 id='graph-date-range',
@@ -54,23 +70,9 @@ app.layout = html.Div([
                 end_date=TradingDf.raw_df['Open time'].iloc[-1],
                 style={'padding': '5px'},
             ),
-        ], style={'grid-column': '1', 'grid-row': '2', 'padding': '5px', 'display': 'inline'}),
+        ], style={'padding': '5px', 'display': 'inline'}),
 
-
-        #  VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES
-        html.Div(children=[
-            html.H4('Edit data range:'),
-            dcc.RangeSlider(
-                min=TradingDf.df.index[0],
-                max=TradingDf.df.index[-1],
-                value=[TradingDf.df.index[0], TradingDf.df.index[-1]],
-                marks=TradingDf.date_dict,
-                pushable=True,
-                id='timeframe-slider',
-            ),
-        ], style={'grid-column-start': '2', 'grid-column-end': '12', 'grid-row': '1'}),
-
-        html.Div(children=[
+        html.Div(className='col-sm-8', children=[
             html.H4('Edit visual data range:'),
             dcc.RangeSlider(
                 min=TradingDf.df.index[0],
@@ -80,8 +82,8 @@ app.layout = html.Div([
                 pushable=True,
                 id='visframe-slider'
             ),
-        ], style={'grid-column-start': '2', 'grid-column-end': '12', 'grid-row': '2'}),
-    ], style={'display': 'grid', 'gap': '10px', 'width': '100%', 'margin-bottom': '25px', 'padding': '10px'}),
+        ], style={}),
+    ], style={'width': '100%', 'margin-bottom': '25px', 'padding': '10px'}),
 
     #  MA GRAPH RANGE    MA GRAPH RANGE    MA GRAPH RANGE    MA GRAPH RANGE    MA GRAPH RANGE    MA GRAPH RANGE    MA GRAPH RANGE
     html.H4('Edit MA range (hrs):'),
@@ -127,31 +129,38 @@ app.layout = html.Div([
     html.Div(id="ma_profit_output", style={'display': 'inline'}),
 
     #  GRAPHING    GRAPHING    GRAPHING    GRAPHING    GRAPHING    GRAPHING    GRAPHING    GRAPHING    GRAPHING    GRAPHING    GRAPHING
-    html.H4('Extra graphs to show:'),
-    dcc.Checklist(
-            id="checklist",
-            options=[
-                {"label": "Volume %", "value": "VolPct"},
-                {"label": "MACD", "value": "MACD"},
-                {"label": "Stochastic", "value": "Stoch"},
-            ],
-            inline=True,
-            labelStyle={'padding': '10px'},
-            value=[],
-        ),
-    html.H4('Graphs to overlay candle plot:'),
-    dcc.RadioItems(
-       id="graphOverlay",
-       options={
-            'Vol': 'Volume',
-            'VolPct': 'Volume %',
-            'MACD': 'MACD',
-            'Stoch': 'Stochastic'
-       },
-       inline=True,
-       labelStyle={'padding': '10px'},
-       value='Vol',
-    ),
+
+    html.Div(className='row', children=[
+        html.Div(className='col-sm-6', children=[
+            html.H4('Extra graphs to show:'),
+            dcc.Checklist(
+                    id="checklist",
+                    options=[
+                        {"label": "Volume %", "value": "VolPct"},
+                        {"label": "MACD", "value": "MACD"},
+                        {"label": "Stochastic", "value": "Stoch"},
+                    ],
+                    inline=True,
+                    labelStyle={'padding': '10px'},
+                    value=[],
+                ),
+        ], style={'padding': '5px', 'display': 'inline'}),
+        html.Div(className='col-sm-6', children=[
+            html.H4('Graphs to overlay candle plot:'),
+            dcc.RadioItems(
+               id="graphOverlay",
+               options={
+                    'Vol': 'Volume',
+                    'VolPct': 'Volume %',
+                    'MACD': 'MACD',
+                    'Stoch': 'Stochastic'
+               },
+               inline=True,
+               labelStyle={'padding': '10px'},
+               value='Vol',
+            ),
+        ], style={'padding': '5px', 'display': 'inline'}),
+    ], style={'width': '100%', 'margin-bottom': '25px', 'padding': '10px'}),
     dcc.Graph(id="graph", config={"scrollZoom": True}),
     html.Div(id='hidden-div', style={'display': 'none'}),
 
