@@ -76,27 +76,10 @@ class TradingData:
             self.df.loc[:, 'MA_Long'] = macd_signal(close=self.df.loc[:, 'Close'], window_fast=short_ma, window_slow=long_ma, window_sign=signal_ma)
 
         elif ma_method == 'EMA':
-            # print('EMA selected')
-            # short_multiplier = 2 / (short_ma+1)
-            # long_multiplier = 2 / (long_ma + 1)
-            # self.df.loc[:, 'MA_Short'] = self.df.loc[:, 'Close'].rolling(short_ma).mean()
-            # self.df.loc[:, 'MA_Long'] = self.df.loc[:, 'Close'].rolling(long_ma).mean()
-            # # EMA: {Close - EMA(previous day)} x multiplier + EMA(previous day).
-            # for i in range(short_ma, len(self.df)):
-            #     self.df['MA_Short'].iloc[i] = self.df['Close'].iloc[i] * short_multiplier + (1 - short_multiplier) * \
-            #                              self.df['MA_Short'].iloc[i - 1]
-            # for i in range(long_ma, len(self.df)):
-            #     self.df['MA_Long'].iloc[i] = self.df['Close'].iloc[i] * long_multiplier + (1 - long_multiplier) * \
-            #                                   self.df['MA_Long'].iloc[i - 1]
-
             self.df.loc[:, 'MA_Short'] = ema_indicator(close=self.df.loc[:, 'Close'], window=short_ma)
             self.df.loc[:, 'MA_Long'] = ema_indicator(close=self.df.loc[:, 'Close'], window=long_ma)
 
         else:  # (simple method default)
-            # create simple rolling mean and shifted value columns to later find gradients
-            # print('SIMPLE selected')
-            # self.df.loc[:, 'MA_Short'] = self.df.loc[:, 'Close'].rolling(short_ma).mean()
-            # self.df.loc[:, 'MA_Long'] = self.df.loc[:, 'Close'].rolling(long_ma).mean()
             self.df.loc[:, 'MA_Short'] = sma_indicator(close=self.df.loc[:, 'Close'], window=short_ma)
             self.df.loc[:, 'MA_Long'] = sma_indicator(close=self.df.loc[:, 'Close'], window=long_ma)
 

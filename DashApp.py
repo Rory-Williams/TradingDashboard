@@ -85,9 +85,24 @@ app.layout = html.Div([
         ], style={}),
     ], style={'width': '100%', 'margin-bottom': '25px', 'padding': '10px'}),
 
+    #  SELECT TRADE TYPE    SELECT TRADE TYPE    SELECT TRADE TYPE    SELECT TRADE TYPE    SELECT TRADE TYPE    SELECT TRADE TYPE
+    html.Div(className='col-sm-6', children=[
+            html.H4('Select trade method:'),
+            dcc.RadioItems(
+                    id="graph_trade_method",
+                    options=[
+                        {"label": "MA", "value": "MA"},
+                        {"label": "Wyckoff", "value": "Wyckoff"},
+                    ],
+                    inline=True,
+                    labelStyle={'padding': '10px'},
+                    value='MA',
+                ),
+        ], style={'padding': '5px', 'display': 'inline'}),
     #  MA GRAPH RANGE    MA GRAPH RANGE    MA GRAPH RANGE    MA GRAPH RANGE    MA GRAPH RANGE    MA GRAPH RANGE    MA GRAPH RANGE
-    html.H4('Edit MA range (hrs):'),
+
     html.Div(children=[
+        html.H4('Edit MA range (hrs):'),
         html.P('Moving average method:', style={'padding': '5px', 'display': 'inline'}),
         dcc.RadioItems(
                 id="Graph_MA_method",
@@ -125,8 +140,15 @@ app.layout = html.Div([
                 debounce=True, placeholder="Trade pct fee",
                 value=0.001, style={'margin': '20px'},
         ),
-    ], style={'display': 'inline', 'padding': '20px'}),
-    html.Div(id="ma_profit_output", style={'display': 'inline'}),
+        html.Div(id="ma_profit_output", style={'display': 'inline'}),
+    ], style={'display': 'inline', 'padding': '20px'}, id="graph_ma_inputs_div"),
+
+
+#  WYCKOFF GRAPH INP    WYCKOFF GRAPH INP    WYCKOFF GRAPH INP    WYCKOFF GRAPH INP    WYCKOFF GRAPH INP    WYCKOFF GRAPH INP    WYCKOFF GRAPH INP
+
+    html.Div(children=[
+        html.H4('Wyckoff div'),
+    ], style={'display': 'inline', 'padding': '20px'}, id="graph_wy_inputs_div"),
 
     #  GRAPHING    GRAPHING    GRAPHING    GRAPHING    GRAPHING    GRAPHING    GRAPHING    GRAPHING    GRAPHING    GRAPHING    GRAPHING
 
