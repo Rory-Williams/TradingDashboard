@@ -1,7 +1,7 @@
 #### import external classes
 import pandas as pd
 import matplotlib.pyplot as plt
-from dash import Dash, dcc, html, Input, Output, State
+from dash import Dash, dcc, html, Input, Output, State, dash_table
 import dash_bootstrap_components as dbc
 import plotly
 import plotly.graph_objects as go
@@ -32,6 +32,26 @@ app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 app.layout = html.Div([
     html.H1('BTC vs USDT', style={'padding': '20px'}),
+
+    html.Div(className="row radio-group", children=[
+html.Div(className="col-sm-12", children=[
+        html.H4('Select timeframe for analysis:' ),
+        dbc.RadioItems(
+            id="data_timeunit",
+            className="btn-group",
+            inputClassName="btn-check",
+            labelClassName="btn btn-outline-primary",
+            labelCheckedClassName="active",
+            options=[
+                {"label": "Hours", "value": "H"},
+                {"label": "Days", "value": "D"},
+                {"label": "Weeks", "value": "W"},
+                {"label": "Months", "value": "M"},
+            ],
+            value="H"
+        )],
+         )],
+         style={'padding': '5px', 'display': 'inline'}),
 
     html.Div(className='row', children=[
         #  DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE
@@ -185,6 +205,27 @@ app.layout = html.Div([
     ], style={'width': '100%', 'margin-bottom': '25px', 'padding': '10px'}),
     dcc.Graph(id="graph", config={"scrollZoom": True}),
     html.Div(id='hidden-div', style={'display': 'none'}),
+
+    #  DATA TABLE    DATA TABLE    DATA TABLE    DATA TABLE    DATA TABLE    DATA TABLE    DATA TABLE    DATA TABLE    DATA TABLE
+    html.Div(className='row', id='data_table_div', children=[
+        dash_table.DataTable(
+            id='raw_trading_df',
+            # data=TradingDf.df.to_dict('records'),
+            # columns=[{'id': c, 'name': c} for c in TradingDf.df.columns],
+            page_action='none',
+            style_table={'height': '300px', 'overflowY': 'auto'}
+        ),
+    ], style={'width': '100%', 'margin-bottom': '25px', 'padding': '10px'}),
+    html.Br(),
+    html.Div(className='row', id='data_table_div2', children=[
+        dash_table.DataTable(
+            id='transaction_trading_df',
+            # data=TradingDf.transaction_df.to_dict('records'),
+            # columns=[{'id': c, 'name': c} for c in TradingDf.transaction_df.columns],
+            page_action='none',
+            style_table={'height': '300px', 'overflowY': 'auto'}
+        ),
+    ], style={'width': '100%', 'margin-bottom': '25px', 'padding': '10px'}),
 
     #  STRAT TESTING     STRAT TESTING     STRAT TESTING     STRAT TESTING     STRAT TESTING     STRAT TESTING     STRAT TESTING
     html.H2('Setup Strategy'),

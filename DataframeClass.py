@@ -28,15 +28,27 @@ class TradingData:
         self.raw_df.loc[:, 'Taker buy base asset volume pct'] = self.raw_df['Taker buy base asset volume'] / self.raw_df['Volume']
         self.num_for_str_months = 4000
         self.num_for_str_days = 50
-        self.slice_df(initial_slice)
+        self.slice_df(initial_slice, 'H')
+        self.transaction_df = pd.DataFrame()
 
-    def slice_df(self, num_vals: int):
+    def slice_df(self, num_vals: int, data_timeunit: str):
         '''take a slice from the raw df data to use
         Also generate a datelist string'''
-        if num_vals == 0:
-            self.df = self.raw_df
-        else:
-            self.df = self.raw_df.iloc[-num_vals:]
+        conversion = {'Open': 'first', 'High': 'max', 'Low': 'min', 'Close': 'last', 'Volume': 'sum',
+                      'Close time': 'last', 'Quote asset volume': 'sum', 'Number of trades': 'sum',
+                      'Taker buy base asset volume': 'sum', 'Taker buy quote asset volume': 'sum', 'Ignore': 'min'}
+        self.df = self.raw_df
+        self.df.set_index('Open time', inplace=True)
+        self.df = self.df.resample(data_timeunit).agg(conversion)
+        self.df.reset_index(level=0, inplace=True)
+        if num_vals != 0:
+            self.df = self.df.iloc[-num_vals:]
+
+        # if num_vals == 0:
+        #     self.df = self.raw_df
+        # else:
+        #     self.df = self.raw_df.iloc[-num_vals:]
+
 
         self.date_dict = {}  # dictionary of index vals and associated dates
         self.date_idxs = []
@@ -129,24 +141,21 @@ class TradingData:
 
         buy_crossing = self.df[self.df['transactions'] == 'Pos Cross']
         sell_crossing = self.df[(self.df['transactions'].notnull()) & (self.df['transactions'] != 'Pos Cross')]
-        if len(buy_crossing) > len(sell_crossing):  # drop last row if buy
-            buy_crossing = buy_crossing.iloc[:-1]
+        if len(buy_crossing) > len(sell_crossing):  # drop last row of buy
+            buy_crossing = buy_crossing.iloc[-1:]
+        elif len(buy_crossing) < len(sell_crossing):
+            sell_crossing = sell_crossing.iloc[1:]
+
+        # if len(sell_crossing) > len(sell_crossing):
+        #     sell_crossing.drop(index=sell_crossing.index[0], axis=0, inplace=True)
+        # elif len(sell_crossing) < len(buy_crossing):
+        #     buy_crossing.drop(index=buy_crossing.index[-1], axis=0, inplace=True)
 
         sell_crossing_df = sell_crossing.add_prefix("Sell_")
         buy_crossing_df = buy_crossing.add_prefix("Buy_")
         sell_crossing_df = sell_crossing_df.reset_index(drop=True)  # reset index for comparisons
         buy_crossing_df = buy_crossing_df.reset_index(drop=True)
 
-        #
-        # # get dataframes to same size to concatinate, with buy first
-        # if len(sell_crossing_df) > len(buy_crossing_df):
-        #     sell_crossing_df.drop(index=sell_crossing_df.index[0], axis=0, inplace=True)
-        # elif len(sell_crossing_df) < len(buy_crossing_df):
-        #     buy_crossing_df.drop(index=buy_crossing_df.index[-1], axis=0, inplace=True)
-        # sell_crossing_df = sell_crossing_df.reset_index(drop=True)  # reset index for comparisons
-        # buy_crossing_df = buy_crossing_df.reset_index(drop=True)
-        # sell_crossing_df = sell_crossing_df.add_prefix("Sell_")
-        # buy_crossing_df = buy_crossing_df.add_prefix("Buy_")
 
         # concatinate and store in transaction df for use
         self.transaction_df = pd.concat([buy_crossing_df, sell_crossing_df], axis=1)

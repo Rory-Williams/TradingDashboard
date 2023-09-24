@@ -132,10 +132,11 @@ def get_callbacks(app, TradingDf, StratTradingDf):
                    Output(component_id='timeframe-slider', component_property='value'),
                    Output(component_id='timeframe-slider', component_property='marks'),
                    Output(component_id='visframe-slider', component_property='value')],
-                  [Input(component_id='df_num_hours', component_property='value')])
-    def set_time_slider_range(df_num_hours):
+                  [Input(component_id='df_num_hours', component_property='value'),
+                   Input('data_timeunit', 'value')])
+    def set_time_slider_range(df_num_hours, data_timeunit):
 
-        TradingDf.slice_df(df_num_hours)
+        TradingDf.slice_df(df_num_hours, data_timeunit)
 
         time_min = TradingDf.df.index[0]
         time_max = TradingDf.df.index[-1]
@@ -206,7 +207,12 @@ def get_callbacks(app, TradingDf, StratTradingDf):
          Output("ma_profit_output", "children"),
          Output("graphOverlay", "value"),
          Output('graph_ma_inputs_div', 'style'),
-         Output('graph_wy_inputs_div', 'style')],
+         Output('graph_wy_inputs_div', 'style'),
+         # Output('data_table_div','style')],
+         Output('raw_trading_df', 'data'),
+         Output('raw_trading_df', 'columns'),
+         Output('transaction_trading_df', 'data'),
+         Output('transaction_trading_df', 'columns')],
         [Input(component_id="timeframe-slider", component_property="value"),
          Input("visframe-slider", "value"),
          Input("ma_short", "value"),
@@ -217,11 +223,21 @@ def get_callbacks(app, TradingDf, StratTradingDf):
          Input('checklist', 'value'),
          Input('graphOverlay', 'value'),
          Input('Graph_MA_method', 'value'),
-         Input('graph_trade_method', 'value')]
+         Input('graph_trade_method', 'value'),
+         Input('data_timeunit', 'value')]
     )
-    def display_candlestick(timeframeVal, visframVal, ma_short, ma_long, ma_signal, trade_pct_fee, df_num_hours, checklist, graphOverlay, graphMAmethod, graphTradeMethod):
+    def display_candlestick(timeframeVal, visframVal, ma_short, ma_long, ma_signal, trade_pct_fee, df_num_hours, checklist, graphOverlay, graphMAmethod, graphTradeMethod, data_timeunit):
 
-        TradingDf.df = TradingDf.raw_df.loc[timeframeVal[0]:timeframeVal[1]]
+        # conversion = {'Open': 'first', 'High': 'max', 'Low': 'min', 'Close': 'last', 'Volume': 'sum',
+        #       'Close time': 'last', 'Quote asset volume': 'sum', 'Number of trades': 'sum',
+        #       'Taker buy base asset volume': 'sum', 'Taker buy quote asset volume': 'sum', 'Ignore': 'min'}
+        # TradingDf.df.set_index('Open time', inplace=True)
+        # TradingDf.df = TradingDf.df.resample(data_timeunit).agg(conversion)
+        # TradingDf.df.reset_index(level=0, inplace=True)
+
+
+        TradingDf.df = TradingDf.df.loc[timeframeVal[0]:timeframeVal[1]]
+        print(TradingDf.df.head())
 
         # MACD
         if graphMAmethod == 'MACD' or graphOverlay == 'MACD' or 'MACD' in checklist:  # only calc if needed
@@ -287,6 +303,7 @@ def get_callbacks(app, TradingDf, StratTradingDf):
                                    trade_cost_pct=trade_pct_fee, signal_ma=ma_signal, trade_strat_dict={})
             final_pct_profit = round(TradingDf.transaction_df.Pct_profit_cum.iloc[-1], 5)
             final_pct_profit = f'Final % profit: {final_pct_profit}  ¦  Number of trades: {len(TradingDf.transaction_df.Pct_profit_cum)}'
+            print(final_pct_profit)
 
             fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['MA_Short'],
                                      opacity=0.7,
@@ -332,34 +349,6 @@ def get_callbacks(app, TradingDf, StratTradingDf):
             fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=stoch.stoch(), line=dict(color='black', width=1), name='Stochastic'), secondary_y=True)
             fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=stoch.stoch_signal(), line=dict(color='blue', width=1), name='Stochastic Signal'), secondary_y=True)
             fig.update_yaxes(title_text="Stochastic Signal", showgrid=False)
-
-        # fig.update_layout(
-        #     yaxis3=dict(
-        #         title="yaxis3 title",
-        #         titlefont=dict(
-        #             color="#d62728"
-        #         ),
-        #         tickfont=dict(
-        #             color="#d62728"
-        #         ),
-        #         anchor="x",
-        #         overlaying="y",
-        #         side="right"
-        #     ),
-        #     yaxis4=dict(
-        #         title="yaxis4 title",
-        #         # titlefont=dict(
-        #         #     color="#9467bd"
-        #         # ),
-        #         # tickfont=dict(
-        #         #     color="#9467bd"
-        #         # ),
-        #         # anchor="free",
-        #         overlaying="y",
-        #         side="right",
-        #         # position=0.85
-        #     )
-        # )
 
         fig.update_layout(
             xaxis=dict(
@@ -417,4 +406,10 @@ def get_callbacks(app, TradingDf, StratTradingDf):
             yaxis2=dict(autorange=True)  # auto range required to allow swapping of overlay graph
         )
 
-        return fig, final_pct_profit, graphOverlay, MA_div_display, Wyckoff_div_display
+        raw_trading_df = TradingDf.df.to_dict('records')
+        raw_trading_df_columns = [{'id': c, 'name': c} for c in TradingDf.df.columns]
+        transaction_trading_df = TradingDf.transaction_df.to_dict('records')
+        transaction_trading_df_columns = [{'id': c, 'name': c} for c in TradingDf.transaction_df.columns]
+
+        return fig, final_pct_profit, graphOverlay, MA_div_display, Wyckoff_div_display, \
+               raw_trading_df, raw_trading_df_columns, transaction_trading_df, transaction_trading_df_columns
