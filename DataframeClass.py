@@ -13,8 +13,10 @@ import datetime
 from itertools import repeat
 import time
 import numpy as np
+from math import ceil
 
 pd.options.mode.chained_assignment = None
+pd.options.mode.copy_on_write = True
 
 class TradingData:
     def __init__(self, csv_path: str, initial_slice: int):
@@ -26,49 +28,48 @@ class TradingData:
         # print(self.raw_df.head())
         self.raw_df['Open time'] = pd.to_datetime(self.raw_df['Open time'], unit='ms')
         self.raw_df.loc[:, 'Taker buy base asset volume pct'] = self.raw_df['Taker buy base asset volume'] / self.raw_df['Volume']
-        self.num_for_str_months = 4000
-        self.num_for_str_days = 50
         self.slice_df(initial_slice, 'H')
         self.transaction_df = pd.DataFrame()
 
     def slice_df(self, num_vals: int, data_timeunit: str):
-        '''take a slice from the raw df data to use
-        Also generate a datelist string'''
+        '''take a slice from the raw df data to use, with timeunit defined as (H/D/W/M)
+        Also generate a datelist string.'''
+
+        # initially convert dataframe to correct time unit
         conversion = {'Open': 'first', 'High': 'max', 'Low': 'min', 'Close': 'last', 'Volume': 'sum',
                       'Close time': 'last', 'Quote asset volume': 'sum', 'Number of trades': 'sum',
                       'Taker buy base asset volume': 'sum', 'Taker buy quote asset volume': 'sum', 'Ignore': 'min'}
-        self.df = self.raw_df
+        self.df = self.raw_df.copy()
         self.df.set_index('Open time', inplace=True)
         self.df = self.df.resample(data_timeunit).agg(conversion)
         self.df.reset_index(level=0, inplace=True)
+        self.df.loc[:, 'Taker buy base asset volume pct'] = self.df['Taker buy base asset volume'] / self.df['Volume']
         if num_vals != 0:
             self.df = self.df.iloc[-num_vals:]
+        self.df_temp = self.df.copy()  # used for visual slider picking
 
-        # if num_vals == 0:
-        #     self.df = self.raw_df
-        # else:
-        #     self.df = self.raw_df.iloc[-num_vals:]
-
-
+        # setup timeline label values
         self.date_dict = {}  # dictionary of index vals and associated dates
         self.date_idxs = []
-        if len(self.df) > self.num_for_str_months:
-            date_str_to_search = '%m'
-        elif len(self.df) < self.num_for_str_days:
-            date_str_to_search = '%h/%d/%m'
+        if data_timeunit == 'D' or data_timeunit == 'H':
+            date_str_to_search = '%d/%m/%y'
         else:
-            date_str_to_search = '%d/%m'
+            date_str_to_search = '%m/%y'
 
         # list of unique day dates e.g. 09/05
         self.datelist = self.df['Open time'].dt.strftime(date_str_to_search).unique()
-        if len(self.datelist) > 30:
-            self.datelist = self.datelist[::4]
-            print(f'datelist: {self.datelist}')
+        # print('len datelist:', len(self.datelist))
+        # print('last val:', self.datelist[-1])
+
+        num_labels = 20
+        if len(self.datelist) > num_labels:
+            interval = ceil(len(self.datelist)/num_labels)
+            self.datelist = self.datelist[::interval]
 
         for date in self.datelist:
             date_index = self.df[self.df['Open time'].dt.strftime(date_str_to_search) == date].index[0]
             self.date_idxs.append(date_index)
-            self.date_dict[str(date_index)] = date
+            self.date_dict[str(date_index)] = date  # used to store timeline labels against indexs
 
 
     def update_df_ma(self, ma_method: str, short_ma: int, long_ma: int, trade_cost_pct: float, **kwargs):
@@ -84,7 +85,7 @@ class TradingData:
         if ma_method == 'MACD':
             # print('MACD selected')
             self.df.loc[:, 'MA_Short'] = macd(close=self.df.loc[:, 'Close'], window_fast=short_ma, window_slow=long_ma)
-            self.macd_diff = macd_diff(close=self.df.loc[:, 'Close'], window_fast=short_ma, window_slow=long_ma, window_sign=signal_ma)
+            # self.macd_diff = macd_diff(close=self.df.loc[:, 'Close'], window_fast=short_ma, window_slow=long_ma, window_sign=signal_ma)
             self.df.loc[:, 'MA_Long'] = macd_signal(close=self.df.loc[:, 'Close'], window_fast=short_ma, window_slow=long_ma, window_sign=signal_ma)
 
         elif ma_method == 'EMA':
@@ -141,16 +142,15 @@ class TradingData:
 
         buy_crossing = self.df[self.df['transactions'] == 'Pos Cross']
         sell_crossing = self.df[(self.df['transactions'].notnull()) & (self.df['transactions'] != 'Pos Cross')]
-        if len(buy_crossing) > len(sell_crossing):  # drop last row of buy
-            buy_crossing = buy_crossing.iloc[-1:]
-        elif len(buy_crossing) < len(sell_crossing):
-            sell_crossing = sell_crossing.iloc[1:]
+        if len(buy_crossing) > len(sell_crossing):  # drop last row of buy for equal trades
+            buy_crossing.drop(buy_crossing.tail(1).index, inplace=True)
+        elif len(buy_crossing) < len(sell_crossing):  # drop first row of sell for equal trade
+            sell_crossing.drop(sell_crossing.head(1).index, inplace=True)
+        elif sell_crossing['Open time'].iloc[0] < buy_crossing['Open time'].iloc[0]:  # drop both rows to reorder trades
+            buy_crossing.drop(buy_crossing.tail(1).index, inplace=True)
+            sell_crossing.drop(sell_crossing.head(1).index, inplace=True)
 
-        # if len(sell_crossing) > len(sell_crossing):
-        #     sell_crossing.drop(index=sell_crossing.index[0], axis=0, inplace=True)
-        # elif len(sell_crossing) < len(buy_crossing):
-        #     buy_crossing.drop(index=buy_crossing.index[-1], axis=0, inplace=True)
-
+        # make buy and sell same length
         sell_crossing_df = sell_crossing.add_prefix("Sell_")
         buy_crossing_df = buy_crossing.add_prefix("Buy_")
         sell_crossing_df = sell_crossing_df.reset_index(drop=True)  # reset index for comparisons

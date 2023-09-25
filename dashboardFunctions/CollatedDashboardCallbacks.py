@@ -228,7 +228,7 @@ def get_callbacks(app, TradingDf, StratTradingDf):
     )
     def display_candlestick(timeframeVal, visframVal, ma_short, ma_long, ma_signal, trade_pct_fee,
                             df_num_hours, checklist, graphOverlay, graphMAmethod, graphTradeMethod,
-                            data_timeunit, ):
+                            data_timeunit, graph_start_date, graph_end_date):
 
         TradingDf.df = TradingDf.df_temp.loc[timeframeVal[0]:timeframeVal[1]]
 

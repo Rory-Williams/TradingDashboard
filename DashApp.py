@@ -17,7 +17,10 @@ import time
 
 #### import local classes
 from DataframeClass import TradingData
-from DashboardFunctions import get_callbacks
+
+import sys
+sys.path.insert(1, 'dashboardFunctions')
+from dashboardFunctions import CollatedDashboardCallbacks
 
 
 #### setup dataframe class
@@ -34,27 +37,27 @@ app.layout = html.Div([
     html.H1('BTC vs USDT', style={'padding': '20px'}),
 
     html.Div(className="row radio-group", children=[
-html.Div(className="col-sm-12", children=[
-        html.H4('Select timeframe for analysis:' ),
-        dbc.RadioItems(
-            id="data_timeunit",
-            className="btn-group",
-            inputClassName="btn-check",
-            labelClassName="btn btn-outline-primary",
-            labelCheckedClassName="active",
-            options=[
-                {"label": "Hours", "value": "H"},
-                {"label": "Days", "value": "D"},
-                {"label": "Weeks", "value": "W"},
-                {"label": "Months", "value": "M"},
-            ],
-            value="H"
-        )],
+        html.Div(className="col-sm-12", children=[
+            html.H4('Select timeframe for analysis:' ),
+            dbc.RadioItems(
+                id="data_timeunit",
+                className="btn-group",
+                inputClassName="btn-check",
+                labelClassName="btn btn-outline-primary",
+                labelCheckedClassName="active",
+                options=[
+                    {"label": "Hours", "value": "H"},
+                    {"label": "Days", "value": "D"},
+                    {"label": "Weeks", "value": "W"},
+                    {"label": "Months", "value": "M"},
+                ],
+                value="H"
+            )],
          )],
-         style={'padding': '5px', 'display': 'inline'}),
+     style={'padding': '5px', 'display': 'inline'}),
 
+    #  DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE
     html.Div(className='row', children=[
-        #  DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE
         html.Div(className='col-sm-4', children=[
             html.H4('Select number of hours of data to show (0 for all data):' ),
             dcc.Input(
@@ -77,7 +80,7 @@ html.Div(className="col-sm-12", children=[
         ], style={}),
     ], style={'width': '100%', 'margin-bottom': '25px', 'padding': '10px'}),
 
-        #  VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES
+    #  VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES    VIS RANGES
     html.Div(className='row', children=[
         html.Div(className='col-sm-4', children=[
             html.H4('Or select date range to check strategy:'),
@@ -168,7 +171,7 @@ html.Div(className="col-sm-12", children=[
 
     html.Div(children=[
         html.H4('Wyckoff div'),
-    ], style={'display': 'inline', 'padding': '20px'}, id="graph_wy_inputs_div"),
+    ], style={'display': 'none', 'padding': '20px'}, id="graph_wy_inputs_div"),
 
     #  GRAPHING    GRAPHING    GRAPHING    GRAPHING    GRAPHING    GRAPHING    GRAPHING    GRAPHING    GRAPHING    GRAPHING    GRAPHING
 
@@ -399,8 +402,7 @@ html.Div(className="col-sm-12", children=[
     ),
 ], style={'justify-content': 'center', 'align-items': 'center', 'text-align': 'center'})
 
-get_callbacks(app, TradingDf, StratTradingDf)
-
+CollatedDashboardCallbacks.get_callbacks(app, TradingDf, StratTradingDf)
 
 app.run_server(debug=True)
 
