@@ -18,10 +18,10 @@ import time
 #### import local classes
 from DataframeClass import TradingData
 
+# from dashboardFunctions import CollatedDashboardCallbacks
 import sys
 sys.path.insert(1, 'dashboardFunctions')
-from dashboardFunctions import CollatedDashboardCallbacks
-
+from CollatedDashboardCallbacks import get_callbacks
 
 #### setup dataframe class
 csv_path = 'C:/Users/rory1/PycharmProjects/CryptoBots/BTC_Price_History_Binance/BTCUSDT-1h-PriceHistoryCollatedFull.csv'
@@ -402,7 +402,7 @@ app.layout = html.Div([
     ),
 ], style={'justify-content': 'center', 'align-items': 'center', 'text-align': 'center'})
 
-CollatedDashboardCallbacks.get_callbacks(app, TradingDf, StratTradingDf)
+get_callbacks(app, TradingDf, StratTradingDf)
 
 app.run_server(debug=True)
 
