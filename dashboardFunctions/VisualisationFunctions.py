@@ -10,147 +10,107 @@ def hour_rounder(t):
 
 def get_vis_callbacks(app, TradingDf, StratTradingDf):
 
-    @app.callback([Output('graph-date-range', 'start_date'), Output('graph-date-range', 'end_date'),
-                   Output('df_num_hours', 'value', allow_duplicate=True)],
-                  [Input('df_num_hours', 'value'),
-                   Input('data_timeunit', 'value'),
-                   Input('time-reset-btn', 'n_clicks'),
-                   Input('graph-date-range', 'start_date'), Input('graph-date-range', 'end_date')],
-                  prevent_initial_call=True)
-    def set_time_from_inpbox(df_num_hours, data_timeunit, btn, start_date, end_date):
-
-        # get previous indexs for time limits
-        prev_start_date = TradingDf.df['Open time'].index[0]
-        prev_end_date = TradingDf.df['Open time'].index[-1]
-        print('prev dates:', prev_start_date, prev_end_date)
-
-        if "time-reset-btn" == ctx.triggered_id:
-            end_date = TradingDf.raw_df['Open time'].index[-1]
-            start_date = prev_start_date
-            print("Reset button clicked")
-            print('start', start_date, 'end', end_date)
-            TradingDf.slice_df(data_timeunit, start_date=start_date, end_date=end_date)
-        elif len(TradingDf.df['Open time']) != df_num_hours:
-            print('df_hrs_method')
-            end_date = prev_end_date
-            start_date = end_date - df_num_hours
-            TradingDf.slice_df(data_timeunit, start_date=start_date, end_date=end_date)
-        else:
-            print('date_picker_method')
-            if 'T' in start_date:
-                start_date = start_date.split('T')[0]
-            if 'T' in end_date:
-                end_date = end_date.split('T')[0]
-            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
-            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
-            # print('dates start:', start_date, 'end:', end_date)
-            # print('df date:',TradingDf.df['Open time'].iloc[-1])
-            # print(TradingDf.df['Open time'].iloc[-1] == datetime.datetime.strptime('2023-05-14', "%Y-%m-%d"))
-            # print('dftype', type(TradingDf.df['Open time'].iloc[0]))
-            # print('startdate type', type(start_date))
-
-
-            # start_date = TradingDf.df[TradingDf.raw_df['Open time'] == start_date].index[0]
-            # end_date = TradingDf.df[TradingDf.df['Open time'] == end_date].index[0]
-            # start_date = TradingDf.raw_df[TradingDf.raw_df['Open time'] == start_date].index[0]
-            # end_date = TradingDf.raw_df[TradingDf.raw_df['Open time'] == end_date].index[0]
-            # print('start & end: ', start_date, end_date)
-            # TradingDf.slice_df(data_timeunit, start_date=start_date, end_date=end_date)
-
-
-        # TradingDf.slice_df(data_timeunit, num_vals=df_num_hours, end_date=end_date)
-        set_time_slider_range({'display': 'none'})
-
-        # MAY NEED TO CORRECT WHAT TO RETURN TO DATE PICKER!!!!!!!!!!
-        return TradingDf.df['Open time'].iloc[0], TradingDf.df['Open time'].iloc[-1], len(TradingDf.df)
-
-
-
-    # @app.callback([Output('graph-date-range', 'start_date'), Output('graph-date-range', 'end_date')],
-    #               [Input('df_num_hours', 'value'),
-    #                Input('data_timeunit', 'value')])
-    # def set_time_from_inpbox(df_num_hours, data_timeunit):
-    #     end_date = TradingDf.df['Open time'].iloc[-1]
-    #     print('end date1', end_date)
-    #     print('start', TradingDf.df['Open time'].iloc[0], 'end', end_date)
-    #
-    #     TradingDf.slice_df(data_timeunit, num_vals=df_num_hours, end_date=end_date)
-    #     set_time_slider_range({'display': 'none'})
-    #     # return_div = {'display': 'none'}
-    #     return TradingDf.df['Open time'].iloc[0], TradingDf.df['Open time'].iloc[-1]
-    #
-    #
-    # @app.callback([Output('hidden-div1', 'style', allow_duplicate=True)],
-    #               [Input('data_timeunit', 'value'),
-    #                Input('time-reset-btn', 'n_clicks'),
-    #                Input('graph-date-range', 'start_date'), Input('graph-date-range', 'end_date')],
-    #               prevent_initial_call=True)
-    # def set_time_from_rngselect(data_timeunit, btn, start_date, end_date):
-    #
-    #     # handle date input field
-    #     print('btn',btn)
-    #     if "time-reset-btn" == ctx.triggered_id:
-    #         end_date = TradingDf.raw_df['Open time'].iloc[-1]
-    #         start_date = TradingDf.df['Open time'].iloc[0]
-    #
-    #         print("Reset button clicked")
-    #         print('start', start_date, 'end', end_date)
-    #     else:
-    #         if 'T' in start_date:
-    #             start_date = start_date.split('T')[0]
-    #         if 'T' in end_date:
-    #             end_date = end_date.split('T')[0]
-    #         start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
-    #         end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
-    #
-    #     print('end date2', end_date)
-    #
-    #     # handle date slicing
-    #     TradingDf.slice_df(data_timeunit, start_date=start_date, end_date=end_date)
-    #     set_time_slider_range({'display': 'none'})
-    #     return_div = {'display': 'none'}
-    #     return [return_div]
-
-
-
-
 
     @app.callback([Output(component_id='timeframe-slider', component_property='min'),
                    Output(component_id='timeframe-slider', component_property='max'),
                    Output(component_id='timeframe-slider', component_property='value'),
                    Output(component_id='timeframe-slider', component_property='marks'),
                    Output(component_id='visframe-slider', component_property='value'),
-                   Output(component_id='df_num_hours', component_property='value')],
-                  # [Input(component_id='df_num_hours', component_property='value'),
-                  #  Input('data_timeunit', 'value'),
-                  #  Input('time-reset-btn', 'n_clicks'),
-                  #  Input('graph-date-range', 'start_date'), Input('graph-date-range', 'end_date')])
-                   [Input('hidden-div1', 'style')])
-    def set_time_slider_range(hidden_div_inp):
+                   Output(component_id='df_num_hours', component_property='value'),
+                   Output('graph-date-range', 'start_date'), Output('graph-date-range', 'end_date')],
+                  [Input(component_id='df_num_hours', component_property='value'),
+                   Input('data_timeunit', 'value'),
+                   Input('time-reset-btn', 'n_clicks'),
+                   Input('graph-date-range', 'start_date'), Input('graph-date-range', 'end_date'),
+                   Input(component_id="timeframe-slider", component_property="value")])
+    def set_time_slider_range(df_num_interval, data_timeunit, btn, start_date_inp, end_date_inp, timeframeVal):
+        '''retrieves date data from various sources, sends date to dataframe class function to trim dataframe
+        Then sets the time slider values + key'''
 
-        # handle if reset button has been pressed:
-        # if "time-reset-btn" == ctx.triggered_id:
+        prev_start_date = TradingDf.df['Open time'].iloc[0]
+        prev_end_date = TradingDf.df['Open time'].iloc[-1]
+        start_date = prev_start_date
+        end_date = prev_end_date
+
+
+        if TradingDf.df.index[0] != timeframeVal[0] or TradingDf.df.index[-1] != timeframeVal[1]:
+            TradingDf.df = TradingDf.df_temp.loc[timeframeVal[0]:timeframeVal[1]]
+
+        else:
+            if "time-reset-btn" == ctx.triggered_id:  # reset button pressed, set to recent date
+                end_date = TradingDf.raw_df_conv['Open time'].iloc[-1]
+
+            elif len(TradingDf.df.index) != df_num_interval:  # date from num hours
+                if df_num_interval > TradingDf.df_length:
+                    start_date = TradingDf.raw_df_conv['Open time'].iloc[0]
+                else:  # find start date from current end date, datetime unit, and value
+                    if data_timeunit == 'H':
+                        start_date = prev_end_date - datetime.timedelta(hours=df_num_interval - 1)
+                    elif data_timeunit == 'D':
+                        start_date = prev_end_date - datetime.timedelta(days=df_num_interval - 1)
+                    elif data_timeunit == 'W':
+                        start_date = prev_end_date - datetime.timedelta(weeks=df_num_interval - 1)
+                    else:
+                        start_date = prev_start_date
+
+            else:  # date from date picker
+                print('input dates:', start_date_inp, end_date_inp)
+                start_date = start_date_inp
+                end_date = end_date_inp
+                if 'T' in start_date:
+                    start_date = start_date.split('T')[0]
+                if 'T' in end_date:
+                    end_date = end_date.split('T')[0]
+                print('input new dates:', start_date, end_date)
+
+            TradingDf.slice_df(data_timeunit, start_date=start_date, end_date=end_date)
+
+
+        # not getting past hours else
+        # not updating the time right from the date outputs of other if statements
+
+
+        # update function to only take timeunit, start and end
+        # update exisitng use of functions for this new inputs
+        # update input/outputs to set datepicker and num hours from inputs
+
+        # print('start inp date:', TradingDf.raw_df[TradingDf.raw_df['Open time'].dt.floor('D') == start_date_inp].index[0])
+        # print('end inp date:', TradingDf.raw_df[TradingDf.raw_df['Open time'].dt.floor('D') == end_date_inp].index[0])
+
+        # if "time-reset-btn" == ctx.triggered_id:  # reset button pressed, set to recent date
+        #     end_date = TradingDf.raw_df['Open time'].iloc[-1]
+        #     start_date = prev_start_date
         #     print("Reset button clicked")
-
-        # # handle date input field
-        # if 'T' in start_date:
-        #     start_date = start_date.split('T')[0]
-        # if 'T' in end_date:
-        #     end_date = end_date.split('T')[0]
-        # start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
-        # end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+        # elif len(TradingDf.df['Open time']) != df_num_hours:
+        #     print('df_num_hrs', df_num_hours)
+        #     print('df len:', len(TradingDf.df['Open time']))
+        #     # start_date_idx = prev_end_date_idx - df_num_hours
+        #     # end_date_idx = prev_end_date
+        # # else:
+        # print(start_date_inp)
+        # print(end_date_inp)
+        # print('start inp date:', TradingDf.df[TradingDf.raw_df['Open time'] == start_date_inp].index[0])
+        # print('end inp date:', TradingDf.df[TradingDf.raw_df['Open time'] == end_date_inp].index[0])
         #
         # # handle date slicing
         # TradingDf.slice_df(df_num_hours, data_timeunit, start_date=start_date, end_date=end_date)
-        print('length of trading df:', len(TradingDf.df))
+        # print('length of trading df:', len(TradingDf.df))
 
-        time_min = TradingDf.df.index[0]
-        time_max = TradingDf.df.index[-1]
-        time_value = [time_min, time_max]
+        # time_inp_start = TradingDf.df['Open time'].iloc[0].replace(' ', 'T')
+        # time_inp_end = TradingDf.df['Open time'].iloc[-1].replace(' ', 'T')
+        time_inp_start = str(TradingDf.df['Open time'].iloc[0]).replace(' ', 'T')
+        time_inp_end = str(TradingDf.df['Open time'].iloc[-1]).replace(' ', 'T')
+        time_min = TradingDf.df_temp.index[0]
+        time_max = TradingDf.df_temp.index[-1]
+        time_value = [TradingDf.df.index[0], TradingDf.df.index[-1]]
         vis_value = time_value
         time_marks = TradingDf.date_dict
 
-        return time_min, time_max, time_value, time_marks, vis_value, len(TradingDf.df)
+        print('input outputs:', time_inp_start, time_inp_end)
+        print('LENGTH DF:', len(TradingDf.df.index))
+
+        return time_min, time_max, time_value, time_marks, vis_value, len(TradingDf.df.index), \
+            time_inp_start, time_inp_end
 
     @app.callback([Output(component_id='visframe-slider', component_property='min'),
                    Output(component_id='visframe-slider', component_property='max'),

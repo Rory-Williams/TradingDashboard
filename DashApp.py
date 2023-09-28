@@ -49,7 +49,6 @@ app.layout = html.Div([
                     {"label": "Hours", "value": "H"},
                     {"label": "Days", "value": "D"},
                     {"label": "Weeks", "value": "W"},
-                    {"label": "Months", "value": "M"},
                 ],
                 value="H"
             )],
