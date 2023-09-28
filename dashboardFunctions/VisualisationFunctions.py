@@ -1,4 +1,4 @@
-from dash import Dash, dcc, html, Input, Output, State
+from dash import Dash, dcc, html, Input, Output, State, ctx
 import datetime
 
 
@@ -9,16 +9,42 @@ def hour_rounder(t):
 
 
 def get_vis_callbacks(app, TradingDf, StratTradingDf):
+
+    def set_time_from_inpbox():
+        pass
+
+    def set_time_from_rngselect():
+        pass
+
+
     @app.callback([Output(component_id='timeframe-slider', component_property='min'),
                    Output(component_id='timeframe-slider', component_property='max'),
                    Output(component_id='timeframe-slider', component_property='value'),
                    Output(component_id='timeframe-slider', component_property='marks'),
-                   Output(component_id='visframe-slider', component_property='value')],
+                   Output(component_id='visframe-slider', component_property='value'),
+                   Output(component_id='df_num_hours', component_property='value')],
                   [Input(component_id='df_num_hours', component_property='value'),
-                   Input('data_timeunit', 'value')])
-    def set_time_slider_range(df_num_hours, data_timeunit):
+                   Input('data_timeunit', 'value'),
+                   Input('time-reset-btn', 'n_clicks'),
+                   Input('graph-date-range', 'start_date'), Input('graph-date-range', 'end_date')])
+    def set_time_slider_range(df_num_hours, data_timeunit, btn, start_date, end_date):
 
-        TradingDf.slice_df(df_num_hours, data_timeunit)
+        # handle if reset button has been pressed:
+        if "time-reset-btn" == ctx.triggered_id:
+            print("Reset button clicked")
+
+        # handle date input field
+        if 'T' in start_date:
+            start_date = start_date.split('T')[0]
+        if 'T' in end_date:
+            end_date = end_date.split('T')[0]
+        start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+        end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+
+        # handle date slicing
+        TradingDf.slice_df(df_num_hours, data_timeunit, start_date=start_date, end_date=end_date)
+        print('length of trading df:', len(TradingDf.df))
+
 
         time_min = TradingDf.df.index[0]
         time_max = TradingDf.df.index[-1]
@@ -26,7 +52,7 @@ def get_vis_callbacks(app, TradingDf, StratTradingDf):
         vis_value = time_value
         time_marks = TradingDf.date_dict
 
-        return time_min, time_max, time_value, time_marks, vis_value
+        return time_min, time_max, time_value, time_marks, vis_value, len(TradingDf.df)
 
     @app.callback([Output(component_id='visframe-slider', component_property='min'),
                    Output(component_id='visframe-slider', component_property='max'),

@@ -1,5 +1,4 @@
-
-from dash import Dash, dcc, html, Input, Output, State
+from dash import Dash, dcc, html, Input, Output, State, ctx
 import datetime
 
 
@@ -65,6 +64,7 @@ def get_strat_callbacks(app, TradingDf, StratTradingDf):
                   prevent_initial_call=True)
     def check_trade_strat(strat_inp_list):
         ''' performs iterative strategies to find best, taking inputs from grid inputs'''
+
         strat_inp_list = strat_inp_list['data']
 
         ma_method, strat_checklist, start_date, end_date, short_start, short_end, short_int, long_start, long_end, \
@@ -74,23 +74,18 @@ def get_strat_callbacks(app, TradingDf, StratTradingDf):
         if len(ma_method) == 0:  # set default calc method to simple moving average if no others selected
             ma_method = ['Simple']
 
-        # strat_checklist
-
+        # clean date data and update dataframe
         if 'T' in start_date:
             start_date = start_date.split('T')[0]
         if 'T' in end_date:
             end_date = end_date.split('T')[0]
-        # start_date_str = start_date
-        # end_date_str = end_date
-        # print(f'start: {start_date_str}    end: {end_date_str}')
-        short_ma_range = [short_start, short_end, short_int]
-        long_ma_range = [long_start, long_end, long_int]
-
         start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
         end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
         StratTradingDf.df = StratTradingDf.raw_df[
             StratTradingDf.raw_df['Open time'].between(start_date, end_date, inclusive='both')]
 
+        short_ma_range = [short_start, short_end, short_int]
+        long_ma_range = [long_start, long_end, long_int]
         StratTradingDf.check_ma_range(ma_method, short_ma_range, long_ma_range, trade_cost_pct,
                                       macd_signal=macd_signal, trade_strat_dict=trade_strat_dict)
         StratTradingDf.ma_profit_df.sort_values(by=['Pct_Profit'], ascending=False, inplace=True)

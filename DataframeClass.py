@@ -31,7 +31,7 @@ class TradingData:
         self.slice_df(initial_slice, 'H')
         self.transaction_df = pd.DataFrame()
 
-    def slice_df(self, num_vals: int, data_timeunit: str):
+    def slice_df(self, num_vals: int, data_timeunit: str, **kwargs):
         '''take a slice from the raw df data to use, with timeunit defined as (H/D/W/M)
         Also generate a datelist string.'''
 
@@ -40,11 +40,18 @@ class TradingData:
                       'Close time': 'last', 'Quote asset volume': 'sum', 'Number of trades': 'sum',
                       'Taker buy base asset volume': 'sum', 'Taker buy quote asset volume': 'sum', 'Ignore': 'min'}
         self.df = self.raw_df.copy()
+
         self.df.set_index('Open time', inplace=True)
         self.df = self.df.resample(data_timeunit).agg(conversion)
         self.df.reset_index(level=0, inplace=True)
         self.df.loc[:, 'Taker buy base asset volume pct'] = self.df['Taker buy base asset volume'] / self.df['Volume']
-        if num_vals != 0:
+
+        #################################
+        # create subset of raw df here after conversion
+        #################################
+        if 'start_date' in kwargs and 'end_date' in kwargs:
+            self.df = self.raw_df[self.df['Open time'].between(kwargs['start_date'], kwargs['end_date'], inclusive='both')]
+        elif num_vals != 0:
             self.df = self.df.iloc[-num_vals:]
         self.df_temp = self.df.copy()  # used for visual slider picking
 
@@ -75,6 +82,7 @@ class TradingData:
     def update_df_ma(self, ma_method: str, short_ma: int, long_ma: int, trade_cost_pct: float, **kwargs):
         '''updates the rolling average columns in the self.df and buy columns when crosses
         Returns df, self.transaction_df'''
+
         if kwargs['signal_ma']:
             signal_ma = kwargs['signal_ma']
         if kwargs['trade_strat_dict']:

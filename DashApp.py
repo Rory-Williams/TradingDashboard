@@ -59,12 +59,20 @@ app.layout = html.Div([
     #  DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE    DATA RANGE
     html.Div(className='row', children=[
         html.Div(className='col-sm-4', children=[
-            html.H4('Select number of hours of data to show (0 for all data):' ),
-            dcc.Input(
-                    id="df_num_hours", type="number",
-                    debounce=True, placeholder="Num hours of data",
-                    value=initial_slice, style={'margin': '20px'},
-                ),
+            html.H4('Select number of hours of data to show from latest date (0 for all data):' ),
+            html.Div(className='row', children=[
+                html.Div(className='col-sm-6', children=[
+                    dcc.Input(
+                            id="df_num_hours", type="number",
+                            debounce=True, placeholder="Num hours of data",
+                            value=initial_slice, style={'margin': '20px'},
+                            className='form-control'
+                        )]),
+                html.Div(className='col-sm-6', children=[
+                    html.Button('Reset to latest time', id='time-reset-btn', n_clicks=0, style={'margin': '20px'},
+                                className='btn btn-primary'),
+                    ]),
+            ]),
         ], style={'padding': '5px', 'display': 'inline'}),
 
         html.Div(className='col-sm-8', children=[
@@ -89,7 +97,7 @@ app.layout = html.Div([
                 display_format='Y-M-D',
                 min_date_allowed=TradingDf.raw_df['Open time'].iloc[0],
                 max_date_allowed=TradingDf.raw_df['Open time'].iloc[-1],
-                start_date=TradingDf.raw_df['Open time'].iloc[-13559],
+                start_date=TradingDf.raw_df['Open time'].iloc[-initial_slice],
                 end_date=TradingDf.raw_df['Open time'].iloc[-1],
                 style={'padding': '5px'},
             ),
@@ -138,32 +146,45 @@ app.layout = html.Div([
                 labelStyle={'padding': '10px', 'display': 'inline'},
                 value='Simple',
             ),
-        html.P(children='Short MA:', style={'display': 'inline'}),
-        dcc.Input(
-                id="ma_short", type="number",
-                debounce=True, placeholder="MA short in hrs",
-                value=5, style={'margin': '20px'},
-            ),
-        html.P(children='Long MA:', style={'display': 'inline'}),
-        dcc.Input(
-                id="ma_long", type="number",
-                debounce=True, placeholder="MA long in hrs",
-                value=20, style={'margin': '20px'},
-            ),
-        html.P(children='Signal (MACD):', style={'display': 'inline'}),
-        dcc.Input(
-                id="ma_signal", type="number",
-                debounce=True, placeholder="MA signal for MACD in hrs",
-                value=9, style={'margin': '20px'},
-            ),
-        html.P(children='', style={'display': 'inline', 'padding': '20px'}),
-        html.P(children='Input trade % fee:', style={'display': 'inline'}),
-        dcc.Input(
-                id="trade_pct_fee", type="number",
-                debounce=True, placeholder="Trade pct fee",
-                value=0.001, style={'margin': '20px'},
-        ),
-        html.Div(id="ma_profit_output", style={'display': 'inline'}),
+
+        html.Div(className='row d-flex justify-content-center', children=[
+            html.Div(className='col-sm-2', children=[
+                html.P(children='Short MA:', style={'display': 'inline'}),
+                dcc.Input(
+                        id="ma_short", type="number",
+                        debounce=True, placeholder="MA short in hrs",
+                        value=5, style={'margin': '20px'},
+                        className='form-control'
+                    ),]),
+            html.Div(className='col-sm-2', children=[
+                html.P(children='Long MA:', style={'display': 'inline'}),
+                dcc.Input(
+                        id="ma_long", type="number",
+                        debounce=True, placeholder="MA long in hrs",
+                        value=20, style={'margin': '20px'},
+                        className='form-control'
+                    ),]),
+            html.Div(className='col-sm-2', children=[
+                html.P(children='Signal (MACD):', style={'display': 'inline'}),
+                dcc.Input(
+                        id="ma_signal", type="number",
+                        debounce=True, placeholder="MA signal for MACD in hrs",
+                        value=9, style={'margin': '20px'},
+                        className='form-control'
+                    ),]),
+            html.Div(className='col-sm-2', children=[
+
+                html.P(children='Input trade % fee:', style={'display': 'inline'}),
+                dcc.Input(
+                        id="trade_pct_fee", type="number",
+                        debounce=True, placeholder="Trade pct fee",
+                        value=0.001, style={'margin': '20px'},
+                        className='form-control'
+                ),]),
+            html.Div(className='col-sm-2', children=[
+                html.Div(id="ma_profit_output", style={'display': 'inline'}),
+            ]),
+            ]),
     ], style={'display': 'inline', 'padding': '20px'}, id="graph_ma_inputs_div"),
 
 
@@ -289,6 +310,7 @@ app.layout = html.Div([
                 id="trade_cost_pct", type="number",
                 debounce=True, placeholder="Trade Cost %",
                 value=0.001, style={'margin': '10px', 'grid-column': '2', 'grid-row': '1'},
+                className='form-control'
             ),
             html.P(style={'padding': '5px', 'grid-column-start': '3', 'grid-column-end': '12', 'grid-row': '1'}),
         ], style={'display': 'grid', 'gap': '10px', 'width': '100%', 'margin-bottom': '25px'}),
@@ -306,21 +328,25 @@ app.layout = html.Div([
                     id="ma_short_start", type="number",
                     debounce=True, placeholder="MA short range start",
                     value=5, style={'margin': '10px', 'grid-column': '2', 'grid-row': '2'},
+                    className='form-control'
                 ),
             dcc.Input(
                     id="ma_short_end", type="number",
                     debounce=True, placeholder="MA short range end",
                     value=10, style={'margin': '10px', 'grid-column': '3', 'grid-row': '2'},
+                    className='form-control'
                 ),
             dcc.Input(
                     id="ma_short_interval", type="number",
                     debounce=True, placeholder="MA short range interval",
                     value=5, style={'margin': '10px', 'grid-column': '4', 'grid-row': '2'},
+                    className='form-control'
                 ),
             dcc.Input(
                     id="macd_signal", type="number",
                     debounce=True, placeholder="MA short range interval",
                     value=9, style={'margin': '10px', 'grid-column': '5', 'grid-row': '2'},
+                    className='form-control'
                 ),
             html.Br(),
             html.P('Long MA range to check:', style={'padding': '5px', 'grid-column': '1', 'grid-row': '3'}),
@@ -328,16 +354,19 @@ app.layout = html.Div([
                 id="ma_long_start", type="number",
                 debounce=True, placeholder="MA long range start",
                 value=100, style={'margin': '10px', 'grid-column': '2', 'grid-row': '3'},
+                className='form-control'
             ),
             dcc.Input(
                 id="ma_long_end", type="number",
                 debounce=True, placeholder="MA long range end",
                 value=200, style={'margin': '10px', 'grid-column': '3', 'grid-row': '3'},
+                className='form-control'
             ),
             dcc.Input(
                 id="ma_long_interval", type="number",
                 debounce=True, placeholder="MA long range interval",
                 value=20, style={'margin': '10px', 'grid-column': '4', 'grid-row': '3'},
+                className='form-control'
             ),
             html.P(style={'padding': '5px', 'grid-column-start': '3', 'grid-column-end': '12', 'grid-row': '1'}),
         ], style={'display': 'grid', 'gap': '10px', 'width': '100%', 'margin-bottom': '25px'}),
@@ -363,16 +392,19 @@ app.layout = html.Div([
                     id="stoploss_start", type="number",
                     debounce=True, placeholder="Stop loss % range start",
                     value=0.05, style={'margin': '10px', 'grid-column': '2', 'grid-row': '3'},
+                    className='form-control'
                 ),
             dcc.Input(
                     id="stoploss_int", type="number",
                     debounce=True, placeholder="Stop loss % range start",
                     value=0.01, style={'margin': '10px', 'grid-column': '2', 'grid-row': '4'},
+                    className='form-control'
                 ),
             dcc.Input(
                     id="stoploss_end", type="number",
                     debounce=True, placeholder="Stop loss % range end",
                     value=0.1, style={'margin': '10px', 'grid-column': '2', 'grid-row': '5'},
+                    className='form-control'
                 ),
             html.P(style={'padding': '5px', 'grid-column-start': '3', 'grid-column-end': '12', 'grid-row': '5'}),
         ], style={'display': 'grid', 'gap': '10px', 'width': '100%', 'margin-bottom': '25px'}),
