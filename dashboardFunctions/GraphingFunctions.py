@@ -27,25 +27,19 @@ def get_graph_callbacks(app, TradingDf, StratTradingDf):
          Output('raw_trading_df', 'columns'),
          Output('transaction_trading_df', 'data'),
          Output('transaction_trading_df', 'columns')],
-        [Input(component_id="timeframe-slider", component_property="value"),
+        [#Input(component_id="timeframe-slider", component_property="value"),
          Input("visframe-slider", "value"),
          Input("ma_short", "value"),
          Input("ma_long", "value"),
          Input("ma_signal", "value"),
          Input("trade_pct_fee", "value"),
-         Input("df_num_hours", "value"),
          Input('checklist', 'value'),
          Input('graphOverlay', 'value'),
          Input('Graph_MA_method', 'value'),
-         Input('graph_trade_method', 'value'),
-         Input('data_timeunit', 'value'),
-         Input('graph-date-range', 'start_date'), Input('graph-date-range', 'end_date')]
+         Input('graph_trade_method', 'value')]
     )
-    def display_candlestick(timeframeVal, visframVal, ma_short, ma_long, ma_signal, trade_pct_fee,
-                            df_num_hours, checklist, graphOverlay, graphMAmethod, graphTradeMethod,
-                            data_timeunit, graph_start_date, graph_end_date):
-
-        TradingDf.df = TradingDf.df_temp.loc[timeframeVal[0]:timeframeVal[1]]
+    def display_candlestick(visframVal, ma_short, ma_long, ma_signal, trade_pct_fee,
+                            checklist, graphOverlay, graphMAmethod, graphTradeMethod):
 
         # MACD
         if graphMAmethod == 'MACD' or graphOverlay == 'MACD' or 'MACD' in checklist:  # only calc if needed
@@ -75,11 +69,13 @@ def get_graph_callbacks(app, TradingDf, StratTradingDf):
         row_heights.extend(repeat(space_value, num_extra_graphs))   # add x number of fractional values to fill the extra space
         specs.extend(repeat([{"secondary_y": False}], num_extra_graphs))
 
+        # set up main set of graphs
         fig = go.Figure()
         fig = plotly.subplots.make_subplots(rows=num_extra_graphs+1, cols=1, shared_xaxes=True, vertical_spacing=0.02,
                                             row_heights=row_heights,
                                             specs=specs)
 
+        # plot main candlestick graph
         fig.add_trace(go.Candlestick(
             x=TradingDf.df['Open time'],
             open=TradingDf.df['Open'], high=TradingDf.df['High'],
@@ -93,45 +89,49 @@ def get_graph_callbacks(app, TradingDf, StratTradingDf):
         MA_div_display = {'display': 'none'}
         Wyckoff_div_display = {'display': 'none'}
 
-
-
         if graphTradeMethod == 'MA':
-            MA_div_display = {'display': 'inline', 'padding': '20px'}
-            TradingDf.update_df_ma(ma_method=graphMAmethod, short_ma=ma_short, long_ma=ma_long,
-                                   trade_cost_pct=trade_pct_fee, signal_ma=ma_signal, trade_strat_dict={})
-            final_pct_profit = round(TradingDf.transaction_df.Pct_profit_cum.iloc[-1], 5)
-            final_pct_profit = f'Final % profit: {final_pct_profit}  ¦  Number of trades: {len(TradingDf.transaction_df.Pct_profit_cum)}'
-            print(final_pct_profit)
+            if (ma_short < ma_long) and (ma_long < TradingDf.df_length):
+                MA_div_display = {'display': 'inline', 'padding': '20px'}
+                TradingDf.update_df_ma(ma_method=graphMAmethod, short_ma=ma_short, long_ma=ma_long,
+                                       trade_cost_pct=trade_pct_fee, signal_ma=ma_signal, trade_strat_dict={})
+                if TradingDf.transaction_df.Pct_profit_cum.iloc[-1]:
+                    final_pct_profit = round(TradingDf.transaction_df.Pct_profit_cum.iloc[-1], 5)
+                    num_trades = len(TradingDf.transaction_df.Pct_profit_cum)
+                else:
+                    final_pct_profit = 0
+                    num_trades = 0
+                final_pct_profit = f'Final % profit: {final_pct_profit}  ¦  Number of trades: {num_trades}'
+                print(final_pct_profit)
 
-            if graphMAmethod == 'MACD':
-                graphOverlay = 'None'
-                fig.add_trace(
-                    go.Scatter(x=TradingDf.df['Open time'], y=macd.macd(), line=dict(color='black', width=2),
-                               name='MACD'), secondary_y=True)
-                fig.add_trace(
-                    go.Scatter(x=TradingDf.df['Open time'], y=macd.macd_signal(), line=dict(color='blue', width=1),
-                               name='MACD signal'), secondary_y=True)
-            else:
-                # graphOverlay = graphOverlay
-                # Add Moving Average Traces
-                fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['MA_Short'],
-                                         opacity=0.7,
-                                         line=dict(color='blue', width=2),
-                                         name='MA_Short'), secondary_y=False, row=1, col=1)
+                if graphMAmethod == 'MACD':
+                    graphOverlay = 'None'
+                    fig.add_trace(
+                        go.Scatter(x=TradingDf.df['Open time'], y=macd.macd(), line=dict(color='black', width=2),
+                                   name='MACD'), secondary_y=True)
+                    fig.add_trace(
+                        go.Scatter(x=TradingDf.df['Open time'], y=macd.macd_signal(), line=dict(color='blue', width=1),
+                                   name='MACD signal'), secondary_y=True)
+                else:
+                    # graphOverlay = graphOverlay
+                    # Add Moving Average Traces
+                    fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['MA_Short'],
+                                             opacity=0.7,
+                                             line=dict(color='blue', width=2),
+                                             name='MA_Short'), secondary_y=False, row=1, col=1)
 
-                fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['MA_Long'],
-                                         opacity=0.7,
-                                         line=dict(color='orange', width=2),
-                                         name='MA_Long'), secondary_y=False, row=1, col=1)
+                    fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['MA_Long'],
+                                             opacity=0.7,
+                                             line=dict(color='orange', width=2),
+                                             name='MA_Long'), secondary_y=False, row=1, col=1)
 
-            # Add vertical by/sell lines
-            for index, row in TradingDf.transaction_df.iterrows():
-                fig.add_vline(x=TradingDf.transaction_df['Buy_Open time'][index], line_width=3, line_dash="dash",
-                              line_color="green", row=1,
-                              col=1)
-                fig.add_vline(x=TradingDf.transaction_df['Sell_Open time'][index], line_width=3, line_dash="dash",
-                              line_color="red", row=1,
-                              col=1)
+                # Add vertical by/sell lines
+                for index, row in TradingDf.transaction_df.iterrows():
+                    fig.add_vline(x=TradingDf.transaction_df['Buy_Open time'][index], line_width=3, line_dash="dash",
+                                  line_color="green", row=1,
+                                  col=1)
+                    fig.add_vline(x=TradingDf.transaction_df['Sell_Open time'][index], line_width=3, line_dash="dash",
+                                  line_color="red", row=1,
+                                  col=1)
 
         elif graphTradeMethod == 'Wyckoff':
             Wyckoff_div_display = {'display': 'inline', 'padding': '20px'}

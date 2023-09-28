@@ -25,35 +25,41 @@ class TradingData:
            'Volume', 'Close time', 'Quote asset volume', 'Number of trades',
            'Taker buy base asset volume', 'Taker buy quote asset volume', 'Ignore']
         self.raw_df.columns = self.columns
-        # print(self.raw_df.head())
+        self.data_timeunit = ''  # used to determine data timeunit (H = hours, D = days, W = weeks)
         self.raw_df['Open time'] = pd.to_datetime(self.raw_df['Open time'], unit='ms')
+        self.raw_df['Open time'] = self.raw_df['Open time'].apply(lambda dt: dt.replace(second=0, microsecond=0, minute=0))  # clean data by fixing hr times to 0
         self.raw_df.loc[:, 'Taker buy base asset volume pct'] = self.raw_df['Taker buy base asset volume'] / self.raw_df['Volume']
-        self.slice_df(initial_slice, 'H')
+        self.slice_df('H', start_date=self.raw_df['Open time'].iloc[-initial_slice], end_date=self.raw_df['Open time'].iloc[-1])
         self.transaction_df = pd.DataFrame()
 
-    def slice_df(self, num_vals: int, data_timeunit: str, **kwargs):
+
+
+    def slice_df(self, data_timeunit: str, start_date, end_date):
         '''take a slice from the raw df data to use, with timeunit defined as (H/D/W/M)
         Also generate a datelist string.'''
 
         # initially convert dataframe to correct time unit
-        conversion = {'Open': 'first', 'High': 'max', 'Low': 'min', 'Close': 'last', 'Volume': 'sum',
-                      'Close time': 'last', 'Quote asset volume': 'sum', 'Number of trades': 'sum',
-                      'Taker buy base asset volume': 'sum', 'Taker buy quote asset volume': 'sum', 'Ignore': 'min'}
-        self.df = self.raw_df.copy()
+        if data_timeunit != self.data_timeunit:
+            conversion = {'Open': 'first', 'High': 'max', 'Low': 'min', 'Close': 'last', 'Volume': 'sum',
+                          'Close time': 'last', 'Quote asset volume': 'sum', 'Number of trades': 'sum',
+                          'Taker buy base asset volume': 'sum', 'Taker buy quote asset volume': 'sum', 'Ignore': 'min'}
+            self.df = self.raw_df.copy()
+            self.df.set_index('Open time', inplace=True)
+            self.df = self.df.resample(data_timeunit).agg(conversion)
+            self.df.reset_index(level=0, inplace=True)
+            self.df.loc[:, 'Taker buy base asset volume pct'] = self.df['Taker buy base asset volume'] / self.df['Volume']
+            self.df_length = len(self.df.index)
+            self.raw_df_conv = self.df.copy()  # used to specify indexs outside of
+            self.data_timeunit = data_timeunit  # set new data_timeunit
 
-        self.df.set_index('Open time', inplace=True)
-        self.df = self.df.resample(data_timeunit).agg(conversion)
-        self.df.reset_index(level=0, inplace=True)
-        self.df.loc[:, 'Taker buy base asset volume pct'] = self.df['Taker buy base asset volume'] / self.df['Volume']
 
-        #################################
-        # create subset of raw df here after conversion
-        #################################
-        if 'start_date' in kwargs and 'end_date' in kwargs:
-            self.df = self.raw_df[self.df['Open time'].between(kwargs['start_date'], kwargs['end_date'], inclusive='both')]
-        elif num_vals != 0:
-            self.df = self.df.iloc[-num_vals:]
-        self.df_temp = self.df.copy()  # used for visual slider picking
+        print('cleaned start/end dates:', start_date, end_date)
+
+        start_idx = self.raw_df_conv[self.raw_df_conv['Open time'] == start_date].index[0]
+        end_idx = self.raw_df_conv[self.raw_df_conv['Open time'] == end_date].index[0]
+        print('df idxs:', start_idx, end_idx)
+        self.df = self.raw_df_conv.loc[start_idx:end_idx]
+        self.df_temp = self.df.copy()  # used for visual slider limit retention
 
         # setup timeline label values
         self.date_dict = {}  # dictionary of index vals and associated dates
@@ -150,23 +156,28 @@ class TradingData:
 
         buy_crossing = self.df[self.df['transactions'] == 'Pos Cross']
         sell_crossing = self.df[(self.df['transactions'].notnull()) & (self.df['transactions'] != 'Pos Cross')]
-        if len(buy_crossing) > len(sell_crossing):  # drop last row of buy for equal trades
-            buy_crossing.drop(buy_crossing.tail(1).index, inplace=True)
-        elif len(buy_crossing) < len(sell_crossing):  # drop first row of sell for equal trade
-            sell_crossing.drop(sell_crossing.head(1).index, inplace=True)
-        elif sell_crossing['Open time'].iloc[0] < buy_crossing['Open time'].iloc[0]:  # drop both rows to reorder trades
-            buy_crossing.drop(buy_crossing.tail(1).index, inplace=True)
-            sell_crossing.drop(sell_crossing.head(1).index, inplace=True)
+        if len(buy_crossing.index) > 0 and len(sell_crossing.index) > 0:
+            if len(buy_crossing) > len(sell_crossing):  # drop last row of buy for equal trades
+                buy_crossing.drop(buy_crossing.tail(1).index, inplace=True)
+            elif len(buy_crossing) < len(sell_crossing):  # drop first row of sell for equal trade
+                sell_crossing.drop(sell_crossing.head(1).index, inplace=True)
+            elif sell_crossing['Open time'].iloc[0] < buy_crossing['Open time'].iloc[0]:  # drop both rows to reorder trades
+                buy_crossing.drop(buy_crossing.tail(1).index, inplace=True)
+                sell_crossing.drop(sell_crossing.head(1).index, inplace=True)
+        else:
+            buy_crossing = pd.DataFrame(0, index=[0], columns=self.df.columns)
+            sell_crossing = buy_crossing
+            print('df trans:', buy_crossing, sell_crossing)
 
         # make buy and sell same length
         sell_crossing_df = sell_crossing.add_prefix("Sell_")
         buy_crossing_df = buy_crossing.add_prefix("Buy_")
         sell_crossing_df = sell_crossing_df.reset_index(drop=True)  # reset index for comparisons
         buy_crossing_df = buy_crossing_df.reset_index(drop=True)
-
-
         # concatinate and store in transaction df for use
         self.transaction_df = pd.concat([buy_crossing_df, sell_crossing_df], axis=1)
+
+
         self.transaction_df['Pct_profit'] = self.transaction_df['Sell_Close'] / self.transaction_df['Buy_Close']
         self.transaction_df['Pct_profit'] = self.transaction_df['Pct_profit'] - trade_cost_pct
         self.transaction_df['Pct_profit_cum'] = self.transaction_df['Pct_profit'].cumprod()
@@ -207,22 +218,23 @@ class TradingData:
             for s_ma in s_ma_list:
                 for l_ma in l_ma_list:
 
-                    self.update_df_ma(ma, s_ma, l_ma, trade_cost_pct, signal_ma=macd_signal, trade_strat_dict=trade_strat_dict)
+                    if s_ma < l_ma and l_ma < len(self.df.index):
+                        self.update_df_ma(ma, s_ma, l_ma, trade_cost_pct, signal_ma=macd_signal, trade_strat_dict=trade_strat_dict)
 
-                    num_trades = len(self.transaction_df)
-                    if not num_trades:  # set final profit to 0 if no trades
-                        final_profit_pct = 0
-                    else:
-                        final_profit_pct = self.transaction_df.Pct_profit_cum.iloc[-1]
+                        num_trades = len(self.transaction_df)
+                        if not num_trades:  # set final profit to 0 if no trades
+                            final_profit_pct = 0
+                        else:
+                            final_profit_pct = self.transaction_df.Pct_profit_cum.iloc[-1]
 
-                    if (  # add ma if not already in data frame. Likely useful when start to save dataframe
-                            len(self.ma_profit_df.loc[
-                                    (self.ma_profit_df['timeframe'] == timeframe) & (self.ma_profit_df['s_ma'] == s_ma) & (
-                                            self.ma_profit_df['l_ma'] == l_ma) & (self.ma_profit_df['MA_type'] == ma)])
-                    ) == 0:
-                        self.ma_profit_df.loc[len(self.ma_profit_df.index)] = [timeframe, timeframe_len, ma, s_ma, l_ma,
-                                                                       final_profit_pct,
-                                                                       num_trades, macd_signal]
+                        if (  # add ma if not already in data frame. Likely useful when start to save dataframe
+                                len(self.ma_profit_df.loc[
+                                        (self.ma_profit_df['timeframe'] == timeframe) & (self.ma_profit_df['s_ma'] == s_ma) & (
+                                                self.ma_profit_df['l_ma'] == l_ma) & (self.ma_profit_df['MA_type'] == ma)])
+                        ) == 0:
+                            self.ma_profit_df.loc[len(self.ma_profit_df.index)] = [timeframe, timeframe_len, ma, s_ma, l_ma,
+                                                                           final_profit_pct,
+                                                                           num_trades, macd_signal]
 
 
 
