@@ -228,7 +228,8 @@ app.layout = html.Div([
         ], style={'padding': '5px', 'display': 'inline'}),
     ], style={'width': '100%', 'margin-bottom': '25px', 'padding': '10px'}),
     dcc.Graph(id="graph", config={"scrollZoom": True}),
-    html.Div(id='hidden-div', style={'display': 'none'}),
+    html.Div(id='hidden-div1', style={'display': 'none'}),
+    html.Div(id='hidden-div2', style={'display': 'none'}),
 
     #  DATA TABLE    DATA TABLE    DATA TABLE    DATA TABLE    DATA TABLE    DATA TABLE    DATA TABLE    DATA TABLE    DATA TABLE
     html.Div(className='row', id='data_table_div', children=[

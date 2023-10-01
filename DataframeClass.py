@@ -28,12 +28,14 @@ class TradingData:
         # print(self.raw_df.head())
         self.raw_df['Open time'] = pd.to_datetime(self.raw_df['Open time'], unit='ms')
         self.raw_df.loc[:, 'Taker buy base asset volume pct'] = self.raw_df['Taker buy base asset volume'] / self.raw_df['Volume']
-        self.slice_df(initial_slice, 'H')
+        self.slice_df('H', num_vals=initial_slice, end_date=self.raw_df.index[-1])
         self.transaction_df = pd.DataFrame()
 
-    def slice_df(self, num_vals: int, data_timeunit: str, **kwargs):
+    def slice_df(self, data_timeunit: str, **kwargs):
         '''take a slice from the raw df data to use, with timeunit defined as (H/D/W/M)
-        Also generate a datelist string.'''
+        Also generate a datelist string.
+        Will accept kwargs 'start_date' and 'end_date' for specific date picking, 'num_vals'
+        or a number vals plus end_date to do a number of time intervals from said end date'''
 
         # initially convert dataframe to correct time unit
         conversion = {'Open': 'first', 'High': 'max', 'Low': 'min', 'Close': 'last', 'Volume': 'sum',
@@ -50,9 +52,23 @@ class TradingData:
         # create subset of raw df here after conversion
         #################################
         if 'start_date' in kwargs and 'end_date' in kwargs:
-            self.df = self.raw_df[self.df['Open time'].between(kwargs['start_date'], kwargs['end_date'], inclusive='both')]
-        elif num_vals != 0:
-            self.df = self.df.iloc[-num_vals:]
+            print('INPUT kwargs start: ', kwargs['start_date'], 'end: ', kwargs['end_date'])
+            # self.df = self.raw_df[self.df['Open time'].between(kwargs['start_date'], kwargs['end_date'], inclusive='both')]
+            self.df = self.df.iloc[kwargs['start_date']:kwargs['end_date']]
+        elif 'num_vals' in kwargs:
+            if kwargs['num_vals'] != 0:
+                if 'end_date' not in kwargs:
+                    kwargs['end_date'] = self.df.index[-1]
+                # else:
+                #     kwargs['end_date'] = self.df[self.df['Open time'] == kwargs['end_date']].index
+
+                print('NUM_VALS kwargs start: ', kwargs['num_vals'], 'end: ', kwargs['end_date'])
+                # need to correct the indexing not from date!!!!
+                print('length df:', len(self.df))
+                # self.df = self.df.iloc[:kwargs['end_date']]
+                self.df = self.df.iloc[-kwargs['num_vals']:]
+
+
         self.df_temp = self.df.copy()  # used for visual slider picking
 
         # setup timeline label values
@@ -65,10 +81,8 @@ class TradingData:
 
         # list of unique day dates e.g. 09/05
         self.datelist = self.df['Open time'].dt.strftime(date_str_to_search).unique()
-        # print('len datelist:', len(self.datelist))
-        # print('last val:', self.datelist[-1])
 
-        num_labels = 20
+        num_labels = 20  # max number of labels on the timelines
         if len(self.datelist) > num_labels:
             interval = ceil(len(self.datelist)/num_labels)
             self.datelist = self.datelist[::interval]

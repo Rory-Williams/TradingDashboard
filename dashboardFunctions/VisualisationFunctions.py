@@ -10,11 +10,109 @@ def hour_rounder(t):
 
 def get_vis_callbacks(app, TradingDf, StratTradingDf):
 
-    def set_time_from_inpbox():
-        pass
+    @app.callback([Output('graph-date-range', 'start_date'), Output('graph-date-range', 'end_date'),
+                   Output('df_num_hours', 'value', allow_duplicate=True)],
+                  [Input('df_num_hours', 'value'),
+                   Input('data_timeunit', 'value'),
+                   Input('time-reset-btn', 'n_clicks'),
+                   Input('graph-date-range', 'start_date'), Input('graph-date-range', 'end_date')],
+                  prevent_initial_call=True)
+    def set_time_from_inpbox(df_num_hours, data_timeunit, btn, start_date, end_date):
 
-    def set_time_from_rngselect():
-        pass
+        # get previous indexs for time limits
+        prev_start_date = TradingDf.df['Open time'].index[0]
+        prev_end_date = TradingDf.df['Open time'].index[-1]
+        print('prev dates:', prev_start_date, prev_end_date)
+
+        if "time-reset-btn" == ctx.triggered_id:
+            end_date = TradingDf.raw_df['Open time'].index[-1]
+            start_date = prev_start_date
+            print("Reset button clicked")
+            print('start', start_date, 'end', end_date)
+            TradingDf.slice_df(data_timeunit, start_date=start_date, end_date=end_date)
+        elif len(TradingDf.df['Open time']) != df_num_hours:
+            print('df_hrs_method')
+            end_date = prev_end_date
+            start_date = end_date - df_num_hours
+            TradingDf.slice_df(data_timeunit, start_date=start_date, end_date=end_date)
+        else:
+            print('date_picker_method')
+            if 'T' in start_date:
+                start_date = start_date.split('T')[0]
+            if 'T' in end_date:
+                end_date = end_date.split('T')[0]
+            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            # print('dates start:', start_date, 'end:', end_date)
+            # print('df date:',TradingDf.df['Open time'].iloc[-1])
+            # print(TradingDf.df['Open time'].iloc[-1] == datetime.datetime.strptime('2023-05-14', "%Y-%m-%d"))
+            # print('dftype', type(TradingDf.df['Open time'].iloc[0]))
+            # print('startdate type', type(start_date))
+
+
+            # start_date = TradingDf.df[TradingDf.raw_df['Open time'] == start_date].index[0]
+            # end_date = TradingDf.df[TradingDf.df['Open time'] == end_date].index[0]
+            # start_date = TradingDf.raw_df[TradingDf.raw_df['Open time'] == start_date].index[0]
+            # end_date = TradingDf.raw_df[TradingDf.raw_df['Open time'] == end_date].index[0]
+            # print('start & end: ', start_date, end_date)
+            # TradingDf.slice_df(data_timeunit, start_date=start_date, end_date=end_date)
+
+
+        # TradingDf.slice_df(data_timeunit, num_vals=df_num_hours, end_date=end_date)
+        set_time_slider_range({'display': 'none'})
+
+        # MAY NEED TO CORRECT WHAT TO RETURN TO DATE PICKER!!!!!!!!!!
+        return TradingDf.df['Open time'].iloc[0], TradingDf.df['Open time'].iloc[-1], len(TradingDf.df)
+
+
+
+    # @app.callback([Output('graph-date-range', 'start_date'), Output('graph-date-range', 'end_date')],
+    #               [Input('df_num_hours', 'value'),
+    #                Input('data_timeunit', 'value')])
+    # def set_time_from_inpbox(df_num_hours, data_timeunit):
+    #     end_date = TradingDf.df['Open time'].iloc[-1]
+    #     print('end date1', end_date)
+    #     print('start', TradingDf.df['Open time'].iloc[0], 'end', end_date)
+    #
+    #     TradingDf.slice_df(data_timeunit, num_vals=df_num_hours, end_date=end_date)
+    #     set_time_slider_range({'display': 'none'})
+    #     # return_div = {'display': 'none'}
+    #     return TradingDf.df['Open time'].iloc[0], TradingDf.df['Open time'].iloc[-1]
+    #
+    #
+    # @app.callback([Output('hidden-div1', 'style', allow_duplicate=True)],
+    #               [Input('data_timeunit', 'value'),
+    #                Input('time-reset-btn', 'n_clicks'),
+    #                Input('graph-date-range', 'start_date'), Input('graph-date-range', 'end_date')],
+    #               prevent_initial_call=True)
+    # def set_time_from_rngselect(data_timeunit, btn, start_date, end_date):
+    #
+    #     # handle date input field
+    #     print('btn',btn)
+    #     if "time-reset-btn" == ctx.triggered_id:
+    #         end_date = TradingDf.raw_df['Open time'].iloc[-1]
+    #         start_date = TradingDf.df['Open time'].iloc[0]
+    #
+    #         print("Reset button clicked")
+    #         print('start', start_date, 'end', end_date)
+    #     else:
+    #         if 'T' in start_date:
+    #             start_date = start_date.split('T')[0]
+    #         if 'T' in end_date:
+    #             end_date = end_date.split('T')[0]
+    #         start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+    #         end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+    #
+    #     print('end date2', end_date)
+    #
+    #     # handle date slicing
+    #     TradingDf.slice_df(data_timeunit, start_date=start_date, end_date=end_date)
+    #     set_time_slider_range({'display': 'none'})
+    #     return_div = {'display': 'none'}
+    #     return [return_div]
+
+
+
 
 
     @app.callback([Output(component_id='timeframe-slider', component_property='min'),
@@ -23,28 +121,28 @@ def get_vis_callbacks(app, TradingDf, StratTradingDf):
                    Output(component_id='timeframe-slider', component_property='marks'),
                    Output(component_id='visframe-slider', component_property='value'),
                    Output(component_id='df_num_hours', component_property='value')],
-                  [Input(component_id='df_num_hours', component_property='value'),
-                   Input('data_timeunit', 'value'),
-                   Input('time-reset-btn', 'n_clicks'),
-                   Input('graph-date-range', 'start_date'), Input('graph-date-range', 'end_date')])
-    def set_time_slider_range(df_num_hours, data_timeunit, btn, start_date, end_date):
+                  # [Input(component_id='df_num_hours', component_property='value'),
+                  #  Input('data_timeunit', 'value'),
+                  #  Input('time-reset-btn', 'n_clicks'),
+                  #  Input('graph-date-range', 'start_date'), Input('graph-date-range', 'end_date')])
+                   [Input('hidden-div1', 'style')])
+    def set_time_slider_range(hidden_div_inp):
 
         # handle if reset button has been pressed:
-        if "time-reset-btn" == ctx.triggered_id:
-            print("Reset button clicked")
+        # if "time-reset-btn" == ctx.triggered_id:
+        #     print("Reset button clicked")
 
-        # handle date input field
-        if 'T' in start_date:
-            start_date = start_date.split('T')[0]
-        if 'T' in end_date:
-            end_date = end_date.split('T')[0]
-        start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
-        end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
-
-        # handle date slicing
-        TradingDf.slice_df(df_num_hours, data_timeunit, start_date=start_date, end_date=end_date)
+        # # handle date input field
+        # if 'T' in start_date:
+        #     start_date = start_date.split('T')[0]
+        # if 'T' in end_date:
+        #     end_date = end_date.split('T')[0]
+        # start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+        # end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+        #
+        # # handle date slicing
+        # TradingDf.slice_df(df_num_hours, data_timeunit, start_date=start_date, end_date=end_date)
         print('length of trading df:', len(TradingDf.df))
-
 
         time_min = TradingDf.df.index[0]
         time_max = TradingDf.df.index[-1]
