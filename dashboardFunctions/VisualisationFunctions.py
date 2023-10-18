@@ -59,45 +59,15 @@ def get_vis_callbacks(app, TradingDf, StratTradingDf):
                 end_date = end_date_inp
                 if 'T' in start_date:
                     start_date = start_date.split('T')[0]
+                    start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
                 if 'T' in end_date:
                     end_date = end_date.split('T')[0]
+                    end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
                 print('input new dates:', start_date, end_date)
 
             TradingDf.slice_df(data_timeunit, start_date=start_date, end_date=end_date)
 
 
-        # not getting past hours else
-        # not updating the time right from the date outputs of other if statements
-
-
-        # update function to only take timeunit, start and end
-        # update exisitng use of functions for this new inputs
-        # update input/outputs to set datepicker and num hours from inputs
-
-        # print('start inp date:', TradingDf.raw_df[TradingDf.raw_df['Open time'].dt.floor('D') == start_date_inp].index[0])
-        # print('end inp date:', TradingDf.raw_df[TradingDf.raw_df['Open time'].dt.floor('D') == end_date_inp].index[0])
-
-        # if "time-reset-btn" == ctx.triggered_id:  # reset button pressed, set to recent date
-        #     end_date = TradingDf.raw_df['Open time'].iloc[-1]
-        #     start_date = prev_start_date
-        #     print("Reset button clicked")
-        # elif len(TradingDf.df['Open time']) != df_num_hours:
-        #     print('df_num_hrs', df_num_hours)
-        #     print('df len:', len(TradingDf.df['Open time']))
-        #     # start_date_idx = prev_end_date_idx - df_num_hours
-        #     # end_date_idx = prev_end_date
-        # # else:
-        # print(start_date_inp)
-        # print(end_date_inp)
-        # print('start inp date:', TradingDf.df[TradingDf.raw_df['Open time'] == start_date_inp].index[0])
-        # print('end inp date:', TradingDf.df[TradingDf.raw_df['Open time'] == end_date_inp].index[0])
-        #
-        # # handle date slicing
-        # TradingDf.slice_df(df_num_hours, data_timeunit, start_date=start_date, end_date=end_date)
-        # print('length of trading df:', len(TradingDf.df))
-
-        # time_inp_start = TradingDf.df['Open time'].iloc[0].replace(' ', 'T')
-        # time_inp_end = TradingDf.df['Open time'].iloc[-1].replace(' ', 'T')
         time_inp_start = str(TradingDf.df['Open time'].iloc[0]).replace(' ', 'T')
         time_inp_end = str(TradingDf.df['Open time'].iloc[-1]).replace(' ', 'T')
         time_min = TradingDf.df_temp.index[0]

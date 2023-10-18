@@ -35,7 +35,7 @@ class TradingData:
 
 
     def slice_df(self, data_timeunit: str, start_date, end_date):
-        '''take a slice from the raw df data to use, with timeunit defined as (H/D/W/M)
+        '''take a slice from the raw df data to use, with timeunit defined as (H/D/W)
         Also generate a datelist string.'''
 
         # initially convert dataframe to correct time unit
@@ -51,12 +51,22 @@ class TradingData:
             self.df_length = len(self.df.index)
             self.raw_df_conv = self.df.copy()  # used to specify indexs outside of
             self.data_timeunit = data_timeunit  # set new data_timeunit
+            # print('head', self.df.head())
 
+        if data_timeunit == 'W':
+            print('head', self.df.head())
+            print('tail', self.df.head())
 
         print('cleaned start/end dates:', start_date, end_date)
 
-        start_idx = self.raw_df_conv[self.raw_df_conv['Open time'] == start_date].index[0]
-        end_idx = self.raw_df_conv[self.raw_df_conv['Open time'] == end_date].index[0]
+        # Calculate absolute differences
+        self.raw_df_conv['Start_Date_Diff'] = (self.raw_df_conv['Open time'] - start_date).abs()
+        start_idx = self.raw_df_conv['Start_Date_Diff'].idxmin()
+        self.raw_df_conv['End_Date_Diff'] = (self.raw_df_conv['Open time'] - end_date).abs()
+        end_idx = self.raw_df_conv['End_Date_Diff'].idxmin()
+
+        # start_idx = self.raw_df_conv[self.raw_df_conv['Open time'] == start_date].index[0]
+        # end_idx = self.raw_df_conv[self.raw_df_conv['Open time'] == end_date].index[0]
         print('df idxs:', start_idx, end_idx)
         self.df = self.raw_df_conv.loc[start_idx:end_idx]
         self.df_temp = self.df.copy()  # used for visual slider limit retention
@@ -167,7 +177,7 @@ class TradingData:
         else:
             buy_crossing = pd.DataFrame(0, index=[0], columns=self.df.columns)
             sell_crossing = buy_crossing
-            print('df trans:', buy_crossing, sell_crossing)
+            # print('df trans:', buy_crossing, sell_crossing)
 
         # make buy and sell same length
         sell_crossing_df = sell_crossing.add_prefix("Sell_")
