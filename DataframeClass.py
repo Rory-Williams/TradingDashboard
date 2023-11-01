@@ -65,8 +65,6 @@ class TradingData:
         self.raw_df_conv['End_Date_Diff'] = (self.raw_df_conv['Open time'] - end_date).abs()
         end_idx = self.raw_df_conv['End_Date_Diff'].idxmin()
 
-        # start_idx = self.raw_df_conv[self.raw_df_conv['Open time'] == start_date].index[0]
-        # end_idx = self.raw_df_conv[self.raw_df_conv['Open time'] == end_date].index[0]
         print('df idxs:', start_idx, end_idx)
         self.df = self.raw_df_conv.loc[start_idx:end_idx]
         self.df_temp = self.df.copy()  # used for visual slider limit retention
@@ -93,6 +91,48 @@ class TradingData:
             date_index = self.df[self.df['Open time'].dt.strftime(date_str_to_search) == date].index[0]
             self.date_idxs.append(date_index)
             self.date_dict[str(date_index)] = date  # used to store timeline labels against indexs
+
+    def check_wyckoff(self, volume_ma, vol_diff_ma, price_ma, price_slope_period, price_slope_ma, accum_time):
+        # Define parameters for Wyckoff accumulation detection
+        price_threshold = 0
+        volume_threshold = 0
+        # min_time_in_accumulation = 5  # Minimum number of days for an accumulation phase
+
+
+
+        # price_ma = 5
+        # price_slope_period = 5
+        # price_slope_ma = 10
+
+        # volume_ma = 100
+        # vol_diff_ma = 10
+
+        # Calculate daily price and volume changes
+        # if 'Price Slope' not in self.df.columns:  # add in thing to prevent constant update
+        self.df['Price ma'] = self.df['Close'].rolling(price_ma).mean()
+        self.df['Price Slope pct'] = (self.df['Close'] - self.df['Open'].shift(price_slope_period)) / (self.df['Close'])
+        self.df['Price Slope pct roll mean'] = self.df['Price Slope pct'].rolling(price_slope_ma).mean()
+
+
+        # taker_buy_base_asset_volume = maker_sell_base_asset_volume
+        # taker_sell_base_asset_volume = maker_buy_base_asset_volume
+        # total_volume = taker_buy_base_asset_volume + taker_sell_base_asset_volume = maker_buy_base_asset_volume + maker_sell_base_asset_volume
+
+        self.df['Volume ma'] = self.df['Volume'].rolling(volume_ma).mean()
+        self.df.loc[
+            self.df['Taker buy base asset volume'] >= self.df['Volume']/2, 'Volume Pct Variation'  # strong buy
+        ] = (self.df['Volume'] - self.df['Volume ma'])/self.df['Volume ma']
+        self.df.loc[
+            self.df['Taker buy base asset volume'] < self.df['Volume'] / 2, 'Volume Pct Variation'  # strong sell
+        ] = (self.df['Volume ma'] - self.df['Volume']) / self.df['Volume ma']
+        self.df['Vol diff pct roll mean'] = self.df['Volume Pct Variation'].rolling(vol_diff_ma).mean()
+
+        self.df['Accumulation'] = 0
+        # self.df[(
+        #         (self.df['MA_Short'] >= self.df['MA_Long']) &
+        #         (previous_short <= previous_long)
+        #         ), 'Accumulation'] = 1
+
 
 
     def update_df_ma(self, ma_method: str, short_ma: int, long_ma: int, trade_cost_pct: float, **kwargs):

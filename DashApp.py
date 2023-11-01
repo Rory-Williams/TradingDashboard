@@ -126,7 +126,7 @@ app.layout = html.Div([
                     ],
                     inline=True,
                     labelStyle={'padding': '10px'},
-                    value='MA',
+                    value='Wyckoff',
                 ),
         ], style={'padding': '5px', 'display': 'inline'}),
     #  MA GRAPH RANGE    MA GRAPH RANGE    MA GRAPH RANGE    MA GRAPH RANGE    MA GRAPH RANGE    MA GRAPH RANGE    MA GRAPH RANGE
@@ -183,7 +183,7 @@ app.layout = html.Div([
             html.Div(className='col-sm-2', children=[
                 html.Div(id="ma_profit_output", style={'display': 'inline'}),
             ]),
-            ]),
+        ]),
     ], style={'display': 'inline', 'padding': '20px'}, id="graph_ma_inputs_div"),
 
 
@@ -191,6 +191,57 @@ app.layout = html.Div([
 
     html.Div(children=[
         html.H4('Wyckoff div'),
+        html.Div(className='row d-flex justify-content-center', children=[
+            html.Div(className='col-sm-2', children=[
+                html.P(children='Vol ma length:', style={'display': 'inline'}),
+                dcc.Input(
+                        id="wy_vol_ma", type="number",
+                        debounce=True, placeholder="Vol ma length",
+                        value=100, style={'margin': '20px'},
+                        className='form-control'
+                    ),
+                html.P(children='Vol slope ave period:', style={'display': 'inline'}),
+                dcc.Input(
+                        id="wy_vol_slope_ave", type="number",
+                        debounce=True, placeholder="Vol slope ave period",
+                        value=10, style={'margin': '20px'},
+                        className='form-control'
+                    ),
+            ]),
+            html.Div(className='col-sm-2', children=[
+                html.P(children='Price ma length:', style={'display': 'inline'}),
+                dcc.Input(
+                        id="wy_price_ma", type="number",
+                        debounce=True, placeholder="Price ma length",
+                        value=5, style={'margin': '20px'},
+                        className='form-control'
+                    ),
+                html.P(children='Price slope offset:', style={'display': 'inline'}),
+                dcc.Input(
+                        id="wy_price_slope_offset", type="number",
+                        debounce=True, placeholder="Price slope offset",
+                        value=5, style={'margin': '20px'},
+                        className='form-control'
+                    ),
+                html.P(children='Price slope averaging period:', style={'display': 'inline'}),
+                dcc.Input(
+                        id="wy_price_slope_ave", type="number",
+                        debounce=True, placeholder="Price slope averaging period",
+                        value=10, style={'margin': '20px'},
+                        className='form-control'
+                    ),
+
+            ]),
+            html.Div(className='col-sm-2', children=[
+                html.P(children='Time in accumulation', style={'display': 'inline'}),
+                dcc.Input(
+                        id="wy_accum_time", type="number",
+                        debounce=True, placeholder="Time in accumulation",
+                        value=10, style={'margin': '20px'},
+                        className='form-control'
+                    ),
+            ]),
+        ]),
     ], style={'display': 'none', 'padding': '20px'}, id="graph_wy_inputs_div"),
 
     #  GRAPHING    GRAPHING    GRAPHING    GRAPHING    GRAPHING    GRAPHING    GRAPHING    GRAPHING    GRAPHING    GRAPHING    GRAPHING
@@ -218,7 +269,8 @@ app.layout = html.Div([
                     'Vol': 'Volume',
                     'VolPct': 'Volume %',
                     'MACD': 'MACD',
-                    'Stoch': 'Stochastic'
+                    'Stoch': 'Stochastic',
+                    'Wyckoff': 'Wyckoff',
                },
                inline=True,
                labelStyle={'padding': '10px'},

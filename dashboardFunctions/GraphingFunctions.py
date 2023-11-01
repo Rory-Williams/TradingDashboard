@@ -36,10 +36,19 @@ def get_graph_callbacks(app, TradingDf, StratTradingDf):
          Input('checklist', 'value'),
          Input('graphOverlay', 'value'),
          Input('Graph_MA_method', 'value'),
-         Input('graph_trade_method', 'value')]
+         Input('graph_trade_method', 'value'),
+         Input('wy_vol_ma', 'value'),
+         Input('wy_vol_slope_ave', 'value'),
+         Input('wy_price_ma', 'value'),
+         Input('wy_price_slope_offset', 'value'),
+         Input('wy_price_slope_ave', 'value'),
+         Input('wy_accum_time', 'value'),
+        ]
     )
     def display_candlestick(visframVal, ma_short, ma_long, ma_signal, trade_pct_fee,
-                            checklist, graphOverlay, graphMAmethod, graphTradeMethod):
+                            checklist, graphOverlay, graphMAmethod, graphTradeMethod,
+                            wy_vol_ma, wy_vol_slope_ave, wy_price_ma, wy_price_slop_offset, wy_price_slope_ave,
+                            wy_accum_time):
 
         # MACD
         if graphMAmethod == 'MACD' or graphOverlay == 'MACD' or 'MACD' in checklist:  # only calc if needed
@@ -90,8 +99,8 @@ def get_graph_callbacks(app, TradingDf, StratTradingDf):
         Wyckoff_div_display = {'display': 'none'}
 
         if graphTradeMethod == 'MA':
+            MA_div_display = {'display': 'inline', 'padding': '20px'}
             if (ma_short < ma_long) and (ma_long < TradingDf.df_length):
-                MA_div_display = {'display': 'inline', 'padding': '20px'}
                 TradingDf.update_df_ma(ma_method=graphMAmethod, short_ma=ma_short, long_ma=ma_long,
                                        trade_cost_pct=trade_pct_fee, signal_ma=ma_signal, trade_strat_dict={})
                 if TradingDf.transaction_df.Pct_profit_cum.iloc[-1]:
@@ -134,7 +143,81 @@ def get_graph_callbacks(app, TradingDf, StratTradingDf):
                                   col=1)
 
         elif graphTradeMethod == 'Wyckoff':
+
             Wyckoff_div_display = {'display': 'inline', 'padding': '20px'}
+            TradingDf.check_wyckoff(wy_vol_ma, wy_vol_slope_ave, wy_price_ma, wy_price_slop_offset, wy_price_slope_ave,
+                            wy_accum_time)
+            graphOverlay = 'Wyckoff'
+
+            # plot moving averages
+            fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Price ma'],
+                                     opacity=0.7,
+                                     line=dict(color='black', width=2),
+                                     name='Price ma', yaxis='y1'), secondary_y=False, row=1, col=1)
+
+            # plot volume graphs
+            fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Volume ma'],
+                                     opacity=0.7,
+                                     line=dict(color='blue', width=2),
+                                     name='Volume ma', yaxis='y2'))
+            # colour based off price
+            colors = ['rgba(0,250,0, 0.2)' if row['Open'] - row['Close'] >= 0 else 'rgba(250,0,0, 0.2)' for index, row
+                      in TradingDf.df.iterrows()]
+            # colour based off based off number of sell makers (more sell makers bad)
+            colors = ['rgba(0,250,0, 0.2)' if row['Taker buy base asset volume'] >= (row['Volume']/2) else 'rgba(250,0,0, 0.2)' for index, row
+                      in TradingDf.df.iterrows()]
+
+            fig.add_trace(go.Bar(x=TradingDf.df['Open time'], y=TradingDf.df['Volume'], marker_color=colors,
+                                 name='Volume', yaxis='y2'))
+
+            # plot Wyckoff variations
+            fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Price Slope pct roll mean'],
+                                     name='Price Slope pct mean', line=dict(color='black', width=2, dash='dot'), yaxis='y3'))
+
+            fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Vol diff pct roll mean'],
+                                     name='Vol diff pct roll mean', line=dict(color='blue', width=2, dash='dot'), yaxis='y3'))
+
+
+            # Graphing
+            fig.update_layout(
+                xaxis=dict(
+                    domain=[0, 0.95]
+                ),
+                yaxis2=dict(
+                    title="Volume",
+                    titlefont=dict(
+                        color="#000000"
+                    ),
+                    tickfont=dict(
+                        color="#000000"
+                    ),
+                    anchor="x",  # specifying x - axis has to be the fixed
+                    overlaying="y",  # specifyinfg y - axis has to be separated
+                    side="right"  # specifying the side the axis should be present
+                ),
+                yaxis3=dict(
+                    title="Pct Variations",
+                    titlefont=dict(
+                        color="#8f00ff"
+                    ),
+                    tickfont=dict(
+                        color="#8f00ff"
+                    ),
+                    anchor="free",  # specifying x - axis has to be the fixed
+                    overlaying="y",  # specifyinfg y - axis has to be separated
+                    side="right",  # specifying the side the axis should be present
+                    position=1  # specifying the position of the axis
+                ),
+                legend={
+                         "x": 0.8,
+                         "y": 1,
+                         # "xref": "container",
+                         # "yref": "container",
+                         # "bgcolor": "Gold",
+                },
+            )
+
+
             pass
 
 
