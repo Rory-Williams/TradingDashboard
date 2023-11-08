@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="2814f4bf-496e-4256-a77a-1e7e3db50e9e" name="Changes" comment="Added initial Wyckoff strategy indicators to both the backend and front end of dash board">
+      <change beforePath="$PROJECT_DIR$/DashApp.py" beforeDir="false" afterPath="$PROJECT_DIR$/DashApp.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DataframeClass.py" beforeDir="false" afterPath="$PROJECT_DIR$/DataframeClass.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dashboardFunctions/GraphingFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/dashboardFunctions/GraphingFunctions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dashboardFunctions/StratFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/dashboardFunctions/StratFunctions.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <favorite-branches>
+      <branch-storage>
+        <map>
+          <entry type="LOCAL">
+            <value>
+              <list>
+                <branch-info repo="$PROJECT_DIR$" source="Visualisation_Update_Branch" />
+              </list>
+            </value>
+          </entry>
+        </map>
+      </branch-storage>
+    </favorite-branches>
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RESET_MODE" value="HARD" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="2RnrjalgCLutHe6rqtecPdpr9Ku" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  </component>
+  <component name="RunManager">
+    <configuration name="RunDashApp" type="PythonConfigurationType" factoryName="Python">
+      <module name="TradingDashboard" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="C:\Users\rory1\PycharmProjects\CryptoBots\SimpleBinanceBot\venv\Scripts\python.exe" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/DashApp.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="2814f4bf-496e-4256-a77a-1e7e3db50e9e" name="Changes" comment="" />
+      <created>1687896822259</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1687896822259</updated>
+    </task>
+    <task id="LOCAL-00001" summary="Initial Commit">
+      <created>1689284938772</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1689284938772</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Updated class to work with more generic moving averages, updated some html formatting">
+      <created>1690394154546</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1690394154546</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Updated some bootstrap styling">
+      <created>1690398516203</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1690398516203</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Updated to allow toggling of MA vs Wycoff analysis on main graph">
+      <created>1695155317215</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1695155317215</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Start before updating graphing to permit hr/day/week timescale options">
+      <created>1695572062250</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1695572062250</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Updated MACD plots. Setup separate callback file structure. Added timeframe conversions for hr, day, week, month.">
+      <created>1695680918213</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1695680918213</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Split callbacks into separate files to begin tidying.">
+      <created>1695841022749</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1695841022749</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Functions split for tidying. Save prior to editing time inputs for graphing functions">
+      <created>1695902938871</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1695902938871</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Midway point for updating graphing date picking - but failed.">
+      <created>1696197281123</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1696197281123</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Updated date picking methods to include calendar picking, as well as numerical from a particular date. Linked all date pickers together so they update together, and also react to the time unit currently selected.">
+      <created>1696961667036</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1696961667036</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Updated datetime visualisation to allow selection of weeks, and to tweek automatic date setting to nearest day/week from lower timeunit value.">
+      <created>1697665044092</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1697665044092</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Added initial Wyckoff strategy indicators to both the backend and front end of dash board">
+      <created>1698878251499</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1698878251499</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="origin/Visualisation_Update_Branch" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Initial Commit" />
+    <MESSAGE value="Updated class to work with more generic moving averages, updated some html formatting" />
+    <MESSAGE value="Updated some bootstrap styling" />
+    <MESSAGE value="Updated to allow toggling of MA vs Wycoff analysis on main graph" />
+    <MESSAGE value="Start before updating graphing to permit hr/day/week timescale options" />
+    <MESSAGE value="Updated MACD plots. Setup separate callback file structure. Added timeframe conversions for hr, day, week, month." />
+    <MESSAGE value="Split callbacks into separate files to begin tidying." />
+    <MESSAGE value="Functions split for tidying. Save prior to editing time inputs for graphing functions" />
+    <MESSAGE value="Midway point for updating graphing date picking - but failed." />
+    <MESSAGE value="Updated date picking methods to include calendar picking, as well as numerical from a particular date. Linked all date pickers together so they update together, and also react to the time unit currently selected." />
+    <MESSAGE value="Updated datetime visualisation to allow selection of weeks, and to tweek automatic date setting to nearest day/week from lower timeunit value." />
+    <MESSAGE value="Added initial Wyckoff strategy indicators to both the backend and front end of dash board" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added initial Wyckoff strategy indicators to both the backend and front end of dash board" />
+  </component>
+</project>
