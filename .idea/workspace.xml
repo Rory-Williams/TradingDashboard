@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2814f4bf-496e-4256-a77a-1e7e3db50e9e" name="Changes" comment="Added initial Wyckoff strategy indicators to both the backend and front end of dash board">
+    <list default="true" id="2814f4bf-496e-4256-a77a-1e7e3db50e9e" name="Changes" comment="Update Wyckoff price indicator to mark where potential accumulation phases are starting">
       <change beforePath="$PROJECT_DIR$/DashApp.py" beforeDir="false" afterPath="$PROJECT_DIR$/DashApp.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/DataframeClass.py" beforeDir="false" afterPath="$PROJECT_DIR$/DataframeClass.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dashboardFunctions/GraphingFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/dashboardFunctions/GraphingFunctions.py" afterDir="false" />
@@ -171,7 +171,14 @@
       <option name="project" value="LOCAL" />
       <updated>1698878251499</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="Update Wyckoff price indicator to mark where potential accumulation phases are starting">
+      <created>1699480056653</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1699480056653</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -210,6 +217,7 @@
     <MESSAGE value="Updated date picking methods to include calendar picking, as well as numerical from a particular date. Linked all date pickers together so they update together, and also react to the time unit currently selected." />
     <MESSAGE value="Updated datetime visualisation to allow selection of weeks, and to tweek automatic date setting to nearest day/week from lower timeunit value." />
     <MESSAGE value="Added initial Wyckoff strategy indicators to both the backend and front end of dash board" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added initial Wyckoff strategy indicators to both the backend and front end of dash board" />
+    <MESSAGE value="Update Wyckoff price indicator to mark where potential accumulation phases are starting" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update Wyckoff price indicator to mark where potential accumulation phases are starting" />
   </component>
 </project>

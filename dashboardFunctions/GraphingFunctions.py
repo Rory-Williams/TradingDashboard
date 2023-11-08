@@ -42,13 +42,14 @@ def get_graph_callbacks(app, TradingDf, StratTradingDf):
          Input('wy_price_ma', 'value'),
          Input('wy_price_slope_offset', 'value'),
          Input('wy_price_slope_ave', 'value'),
+         Input('wy_price_slope_peak_delta', 'value'),
          Input('wy_accum_time', 'value'),
         ]
     )
     def display_candlestick(visframVal, ma_short, ma_long, ma_signal, trade_pct_fee,
                             checklist, graphOverlay, graphMAmethod, graphTradeMethod,
                             wy_vol_ma, wy_vol_slope_ave, wy_price_ma, wy_price_slop_offset, wy_price_slope_ave,
-                            wy_accum_time):
+                            wy_price_slope_peak_delta, wy_accum_time, ):
 
         # MACD
         if graphMAmethod == 'MACD' or graphOverlay == 'MACD' or 'MACD' in checklist:  # only calc if needed
@@ -80,9 +81,11 @@ def get_graph_callbacks(app, TradingDf, StratTradingDf):
 
         # set up main set of graphs
         fig = go.Figure()
+        # fig.update_traces(selector={'name': 'Accum_Price_Slope_Check'}, overwrite=True).data = []
         fig = plotly.subplots.make_subplots(rows=num_extra_graphs+1, cols=1, shared_xaxes=True, vertical_spacing=0.02,
                                             row_heights=row_heights,
                                             specs=specs)
+        fig.update_traces(overwrite=True)
 
         # plot main candlestick graph
         fig.add_trace(go.Candlestick(
@@ -146,7 +149,7 @@ def get_graph_callbacks(app, TradingDf, StratTradingDf):
 
             Wyckoff_div_display = {'display': 'inline', 'padding': '20px'}
             TradingDf.check_wyckoff(wy_vol_ma, wy_vol_slope_ave, wy_price_ma, wy_price_slop_offset, wy_price_slope_ave,
-                            wy_accum_time)
+                                    wy_price_slope_peak_delta, wy_accum_time)
             graphOverlay = 'Wyckoff'
 
             # plot moving averages
@@ -160,9 +163,7 @@ def get_graph_callbacks(app, TradingDf, StratTradingDf):
                                      opacity=0.7,
                                      line=dict(color='blue', width=2),
                                      name='Volume ma', yaxis='y2'))
-            # colour based off price
-            colors = ['rgba(0,250,0, 0.2)' if row['Open'] - row['Close'] >= 0 else 'rgba(250,0,0, 0.2)' for index, row
-                      in TradingDf.df.iterrows()]
+
             # colour based off based off number of sell makers (more sell makers bad)
             colors = ['rgba(0,250,0, 0.2)' if row['Taker buy base asset volume'] >= (row['Volume']/2) else 'rgba(250,0,0, 0.2)' for index, row
                       in TradingDf.df.iterrows()]
@@ -171,17 +172,30 @@ def get_graph_callbacks(app, TradingDf, StratTradingDf):
                                  name='Volume', yaxis='y2'))
 
             # plot Wyckoff variations
+            fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Price Slope pct'],
+                                     name='Price Slope pct', line=dict(color='black', width=2, dash='dot'),
+                                     yaxis='y3'))
             fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Price Slope pct roll mean'],
-                                     name='Price Slope pct mean', line=dict(color='black', width=2, dash='dot'), yaxis='y3'))
+                                     name='Price Slope pct mean', line=dict(color='black', width=2, dash='longdash'),
+                                     yaxis='y3'))
+            fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Price Slope peak delta'],
+                                     name='Price Slope peak delta', line=dict(color='black', width=2, dash='solid'),
+                                     yaxis='y3'))
+            fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Accum_Price_Slope_Check'],
+                                     name='Accum_Price_Slope_Check', yaxis='y3',
+                                     mode='markers', marker=dict(symbol='star', size=10, color='blue', line=dict(width=2))))
+
 
             fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Vol diff pct roll mean'],
-                                     name='Vol diff pct roll mean', line=dict(color='blue', width=2, dash='dot'), yaxis='y3'))
+                                     name='Vol diff pct roll mean', line=dict(color='blue', width=2, dash='dot'), yaxis='y4'))
 
+            print('fig data:')
+            print(fig.data)
 
             # Graphing
             fig.update_layout(
                 xaxis=dict(
-                    domain=[0, 0.95]
+                    domain=[0, 0.9]
                 ),
                 yaxis2=dict(
                     title="Volume",
@@ -196,7 +210,20 @@ def get_graph_callbacks(app, TradingDf, StratTradingDf):
                     side="right"  # specifying the side the axis should be present
                 ),
                 yaxis3=dict(
-                    title="Pct Variations",
+                    title="Price Pct Variations",
+                    titlefont=dict(
+                        color="#8f00ff"
+                    ),
+                    tickfont=dict(
+                        color="#8f00ff"
+                    ),
+                    anchor="free",  # specifying x - axis has to be the fixed
+                    overlaying="y",  # specifyinfg y - axis has to be separated
+                    side="right",  # specifying the side the axis should be present
+                    position=0.95  # specifying the position of the axis
+                ),
+                yaxis4=dict(
+                    title="Vol Pct Variations",
                     titlefont=dict(
                         color="#8f00ff"
                     ),

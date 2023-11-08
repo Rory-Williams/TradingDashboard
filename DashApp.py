@@ -230,7 +230,13 @@ app.layout = html.Div([
                         value=10, style={'margin': '20px'},
                         className='form-control'
                     ),
-
+                html.P(children='Price slope peak delta:', style={'display': 'inline'}),
+                dcc.Input(
+                        id="wy_price_slope_peak_delta", type="number",
+                        debounce=True, placeholder="Price slope peak delta",
+                        value=0.02, style={'margin': '20px'},
+                        className='form-control'
+                    ),
             ]),
             html.Div(className='col-sm-2', children=[
                 html.P(children='Time in accumulation', style={'display': 'inline'}),

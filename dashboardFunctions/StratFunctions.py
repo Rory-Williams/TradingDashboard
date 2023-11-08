@@ -69,7 +69,7 @@ def get_strat_callbacks(app, TradingDf, StratTradingDf):
 
         ma_method, strat_checklist, start_date, end_date, short_start, short_end, short_int, long_start, long_end, \
         long_int, macd_signal, trade_cost_pct, trade_strat_dict = strat_inp_list
-        print(f'trade_strat_dict {trade_strat_dict}')
+        # print(f'trade_strat_dict {trade_strat_dict}')
 
         if len(ma_method) == 0:  # set default calc method to simple moving average if no others selected
             ma_method = ['Simple']
@@ -90,7 +90,7 @@ def get_strat_callbacks(app, TradingDf, StratTradingDf):
                                       macd_signal=macd_signal, trade_strat_dict=trade_strat_dict)
         StratTradingDf.ma_profit_df.sort_values(by=['Pct_Profit'], ascending=False, inplace=True)
 
-        print(f"timeframes: {StratTradingDf.ma_profit_df['timeframe'].iloc[0]}")
+        # print(f"timeframes: {StratTradingDf.ma_profit_df['timeframe'].iloc[0]}")
         final_pct_profit = f"Final % profit: {round(StratTradingDf.ma_profit_df['Pct_Profit'].iloc[0], 5)} for MA ranges: [{short_start}:{short_int}:{short_end}] ¦ [{long_start}:{long_int}:{long_end}]"
         # best_timeframe = f"Best num hour timeframe: {StratTradingDf.ma_profit_df['timeframe'].iloc[0][0]} to {StratTradingDf.ma_profit_df['timeframe'].iloc[0][1]}"
         best_timeframe = f"Best num hour timeframe: {StratTradingDf.ma_profit_df['timeframe'].iloc[0]}"
@@ -102,6 +102,6 @@ def get_strat_callbacks(app, TradingDf, StratTradingDf):
         best_l_ma = f"Best long MA length: {StratTradingDf.ma_profit_df['l_ma'].iloc[0]}"
         timeframe_len = f"Timeframe length [hrs]: {StratTradingDf.ma_profit_df['timeframe_len'].iloc[0]}"
         num_trades = f"Num trades: {StratTradingDf.ma_profit_df['Num_Trades'].iloc[0]}"
-        print(final_pct_profit)
+        # print(final_pct_profit)
         strat_status = 'Status: Calculation complete'
         return ma_method, final_pct_profit, best_timeframe, best_ma_type, best_s_ma, best_l_ma, timeframe_len, num_trades, strat_status
