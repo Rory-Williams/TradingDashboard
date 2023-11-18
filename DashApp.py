@@ -207,6 +207,13 @@ app.layout = html.Div([
                         value=10, style={'margin': '20px'},
                         className='form-control'
                     ),
+                html.P(children='Vol max slope period:', style={'display': 'inline'}),
+                dcc.Input(
+                        id="wy_vol_max_slope_period", type="number",
+                        debounce=True, placeholder="Vol slope ave period",
+                        value=5, style={'margin': '20px'},
+                        className='form-control'
+                    ),
             ]),
             html.Div(className='col-sm-2', children=[
                 html.P(children='Price ma length:', style={'display': 'inline'}),
@@ -227,7 +234,7 @@ app.layout = html.Div([
                 dcc.Input(
                         id="wy_price_slope_ave", type="number",
                         debounce=True, placeholder="Price slope averaging period",
-                        value=10, style={'margin': '20px'},
+                        value=1, style={'margin': '20px'},
                         className='form-control'
                     ),
                 html.P(children='Price slope peak delta:', style={'display': 'inline'}),

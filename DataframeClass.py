@@ -89,7 +89,8 @@ class TradingData:
             self.date_idxs.append(date_index)
             self.date_dict[str(date_index)] = date  # used to store timeline labels against indexs
 
-    def check_wyckoff(self, volume_ma, vol_diff_ma, price_ma_window, price_slope_period, price_slope_ma, price_slope_peak_delta, accum_time):
+    def check_wyckoff(self, volume_ma, vol_diff_ma, wy_vol_max_slope_period,
+                      price_ma_window, price_slope_period, price_slope_ma, price_slope_peak_delta, accum_time):
         # Define parameters for Wyckoff accumulation detection
         price_threshold = 0
         volume_threshold = 0
@@ -114,6 +115,7 @@ class TradingData:
             self.df['Taker buy base asset volume'] < self.df['Volume'] / 2, 'Volume Pct Variation'  # strong sell
         ] = (self.df['Volume ma'] - self.df['Volume']) / self.df['Volume ma']
         self.df['Vol diff pct roll mean'] = self.df['Volume Pct Variation'].rolling(vol_diff_ma).mean()
+        self.df['Vol Rolling future peak pct'] = self.df['Vol diff pct roll mean'].shift(wy_vol_max_slope_period).rolling(wy_vol_max_slope_period).max()
 
 
         # define accumulation stage as when short price gradient over certain period has a min/max diff of certain value
@@ -121,7 +123,7 @@ class TradingData:
         price_slope_change_range_window = 5
         def peak_diff_func(series):
             series = series.values.tolist()
-            largest_diff_with_sign = max([(b - a) for a, b in combinations(series, 2)], key=lambda x: (abs(x), x))
+            largest_diff_with_sign = max([(b - a) for a, b in combinations(series, 2)], key=lambda x: (abs(x), x))  # find largest
             return largest_diff_with_sign
 
         self.df['Price Slope peak delta'] = self.df['Price Slope pct'].rolling(price_slope_change_range_window).apply(peak_diff_func)
@@ -129,7 +131,11 @@ class TradingData:
             self.df.drop(['Accum_Price_Slope_Check'], axis=1, inplace=True)  # remove previous crossing data
         except:
             pass  # column doesnt exist
-        self.df.loc[self.df['Price Slope peak delta'] > price_slope_peak_delta,  'Accum_Price_Slope_Check'] = 0
+
+        # define accumulation phase
+        self.df.loc[(self.df['Price Slope peak delta'] > price_slope_peak_delta) &
+                    (self.df['Vol Rolling future peak pct'] > 0),
+                    'Accum_Price_Slope_Check'] = 0
 
 
 
