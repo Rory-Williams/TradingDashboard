@@ -89,24 +89,33 @@ class TradingData:
             self.date_idxs.append(date_index)
             self.date_dict[str(date_index)] = date  # used to store timeline labels against indexs
 
-    def check_wyckoff(self, volume_ma, vol_diff_ma, wy_vol_max_slope_period,
-                      price_ma_window, price_slope_period, price_slope_ma, price_slope_peak_delta, accum_time):
+    def check_wyckoff(self, volume_ma, wy_vol_variation_ma, wy_vol_max_var_grad_period,
+                      price_ma_window, price_slope_period, price_slope_ma, price_slope_peak_delta, price_slope_peak_delta_window,
+                      accum_time):
+
         # Define parameters for Wyckoff accumulation detection
         price_threshold = 0
         volume_threshold = 0
         # min_time_in_accumulation = 5  # Minimum number of days for an accumulation phase
 
-        # Calculate daily price and volume changes
-        # if 'Price Slope' not in self.df.columns:  # add in thing to prevent constant update
-        self.df['Price ma'] = self.df['Close'].rolling(price_ma_window).mean()
-        self.df['Price Slope pct'] = (self.df['Close'] - self.df['Open'].shift(price_slope_period)) / (self.df['Close'])
-        self.df['Price Slope pct roll mean'] = self.df['Price Slope pct'].rolling(price_slope_ma).mean()
+        def peak_diff_func(series):
+            '''function that finds largest difference in pandas series and returns it with sign'''
+            series = series.values.tolist()
+            largest_diff_with_sign = max([(b - a) for a, b in combinations(series, 2)], key=lambda x: (abs(x), x))  # find largest gradient diff over period
+            return largest_diff_with_sign
 
+        # Calculate daily price and volume changes
+        self.df['Price ma'] = self.df['Close'].rolling(price_ma_window).mean()
+        self.df['Price gradient 1'] = (self.df['Close'] - self.df['Open'].shift(price_slope_period)) / (self.df['Close'])
+        self.df['Price gradient 1 ma'] = self.df['Price gradient 1'].rolling(price_slope_ma).mean()
+        self.df['Price gradient 1 max delta'] = self.df['Price gradient 1'].rolling(
+            price_slope_peak_delta_window).apply(peak_diff_func)
 
         # taker_buy_base_asset_volume = maker_sell_base_asset_volume
         # taker_sell_base_asset_volume = maker_buy_base_asset_volume
         # total_volume = taker_buy_base_asset_volume + taker_sell_base_asset_volume = maker_buy_base_asset_volume + maker_sell_base_asset_volume
 
+        # calc volume ma and % difference of current volume vs ma with
         self.df['Volume ma'] = self.df['Volume'].rolling(volume_ma).mean()
         self.df.loc[
             self.df['Taker buy base asset volume'] >= self.df['Volume']/2, 'Volume Pct Variation'  # strong buy
@@ -114,27 +123,24 @@ class TradingData:
         self.df.loc[
             self.df['Taker buy base asset volume'] < self.df['Volume'] / 2, 'Volume Pct Variation'  # strong sell
         ] = (self.df['Volume ma'] - self.df['Volume']) / self.df['Volume ma']
-        self.df['Vol diff pct roll mean'] = self.df['Volume Pct Variation'].rolling(vol_diff_ma).mean()
-        self.df['Vol Rolling future peak pct'] = self.df['Vol diff pct roll mean'].shift(wy_vol_max_slope_period).rolling(wy_vol_max_slope_period).max()
+        self.df['Volume Pct Variation abs'] = (self.df['Volume'] - self.df['Volume ma'])/self.df['Volume ma']
+        self.df['Volume Pct Variation abs ma'] = self.df['Volume Pct Variation abs'].rolling(wy_vol_variation_ma).mean()
+        self.df['Volume Pct Variation abs gradient 1'] = self.df['Volume Pct Variation abs'].rolling(
+            wy_vol_max_var_grad_period).apply(peak_diff_func)
 
 
-        # define accumulation stage as when short price gradient over certain period has a min/max diff of certain value
-        # and the average price for period after does not go outside certain value
-        price_slope_change_range_window = 5
-        def peak_diff_func(series):
-            series = series.values.tolist()
-            largest_diff_with_sign = max([(b - a) for a, b in combinations(series, 2)], key=lambda x: (abs(x), x))  # find largest
-            return largest_diff_with_sign
 
-        self.df['Price Slope peak delta'] = self.df['Price Slope pct'].rolling(price_slope_change_range_window).apply(peak_diff_func)
+
+        # # define accumulation phase
+        # need a change in price delta, volume action, need to hold a certain price gradient etc.
+
+        # reset accumulation column
         try:
             self.df.drop(['Accum_Price_Slope_Check'], axis=1, inplace=True)  # remove previous crossing data
         except:
             pass  # column doesnt exist
-
-        # define accumulation phase
-        self.df.loc[(self.df['Price Slope peak delta'] > price_slope_peak_delta) &
-                    (self.df['Vol Rolling future peak pct'] > 0),
+        self.df.loc[(self.df['Price gradient 1 max delta'] > price_slope_peak_delta) &
+                    (self.df['Volume Pct Variation abs gradient 1'] > 0),
                     'Accum_Price_Slope_Check'] = 0
 
 

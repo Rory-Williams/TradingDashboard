@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2814f4bf-496e-4256-a77a-1e7e3db50e9e" name="Changes" comment="Update Wyckoff price indicator to mark where potential accumulation phases are starting">
+    <list default="true" id="2814f4bf-496e-4256-a77a-1e7e3db50e9e" name="Changes" comment="Updated Wyckoff Accumulation phase visualisation and criteria">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/DashApp.py" beforeDir="false" afterPath="$PROJECT_DIR$/DashApp.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/DataframeClass.py" beforeDir="false" afterPath="$PROJECT_DIR$/DataframeClass.py" afterDir="false" />
@@ -192,7 +192,14 @@
       <option name="project" value="LOCAL" />
       <updated>1699480186961</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="Updated Wyckoff Accumulation phase visualisation and criteria">
+      <created>1700303249968</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1700303249968</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -232,6 +239,7 @@
     <MESSAGE value="Updated datetime visualisation to allow selection of weeks, and to tweek automatic date setting to nearest day/week from lower timeunit value." />
     <MESSAGE value="Added initial Wyckoff strategy indicators to both the backend and front end of dash board" />
     <MESSAGE value="Update Wyckoff price indicator to mark where potential accumulation phases are starting" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update Wyckoff price indicator to mark where potential accumulation phases are starting" />
+    <MESSAGE value="Updated Wyckoff Accumulation phase visualisation and criteria" />
+    <option name="LAST_COMMIT_MESSAGE" value="Updated Wyckoff Accumulation phase visualisation and criteria" />
   </component>
 </project>

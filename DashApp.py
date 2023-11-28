@@ -200,17 +200,17 @@ app.layout = html.Div([
                         value=100, style={'margin': '20px'},
                         className='form-control'
                     ),
-                html.P(children='Vol slope ave period:', style={'display': 'inline'}),
+                html.P(children='Vol variation ma period:', style={'display': 'inline'}),
                 dcc.Input(
-                        id="wy_vol_slope_ave", type="number",
+                        id="wy_vol_variation_ma", type="number",
                         debounce=True, placeholder="Vol slope ave period",
-                        value=10, style={'margin': '20px'},
+                        value=3, style={'margin': '20px'},
                         className='form-control'
                     ),
-                html.P(children='Vol max slope period:', style={'display': 'inline'}),
+                html.P(children='Vol max variation gradient period:', style={'display': 'inline'}),
                 dcc.Input(
-                        id="wy_vol_max_slope_period", type="number",
-                        debounce=True, placeholder="Vol slope ave period",
+                        id="wy_vol_max_var_grad_period", type="number",
+                        debounce=True, placeholder="Vol max variation gradient period",
                         value=5, style={'margin': '20px'},
                         className='form-control'
                     ),
@@ -223,25 +223,25 @@ app.layout = html.Div([
                         value=5, style={'margin': '20px'},
                         className='form-control'
                     ),
-                html.P(children='Price slope offset:', style={'display': 'inline'}),
+                html.P(children='Price gradient 1 offset:', style={'display': 'inline'}),
                 dcc.Input(
                         id="wy_price_slope_offset", type="number",
                         debounce=True, placeholder="Price slope offset",
                         value=5, style={'margin': '20px'},
                         className='form-control'
                     ),
-                html.P(children='Price slope averaging period:', style={'display': 'inline'}),
+                html.P(children='Price gradient 1 averaging period:', style={'display': 'inline'}),
                 dcc.Input(
                         id="wy_price_slope_ave", type="number",
                         debounce=True, placeholder="Price slope averaging period",
                         value=1, style={'margin': '20px'},
                         className='form-control'
                     ),
-                html.P(children='Price slope peak delta:', style={'display': 'inline'}),
+                html.P(children='Price gradient 1 peak delta window:', style={'display': 'inline'}),
                 dcc.Input(
-                        id="wy_price_slope_peak_delta", type="number",
-                        debounce=True, placeholder="Price slope peak delta",
-                        value=0.02, style={'margin': '20px'},
+                        id="wy_price_slope_peak_delta_window", type="number",
+                        debounce=True, placeholder="Price gradient 1 peak delta window",
+                        value=5, style={'margin': '20px'},
                         className='form-control'
                     ),
             ]),
@@ -251,6 +251,13 @@ app.layout = html.Div([
                         id="wy_accum_time", type="number",
                         debounce=True, placeholder="Time in accumulation",
                         value=10, style={'margin': '20px'},
+                        className='form-control'
+                    ),
+                html.P(children='Price gradient 1 peak delta:', style={'display': 'inline'}),
+                dcc.Input(
+                        id="wy_price_slope_peak_delta", type="number",
+                        debounce=True, placeholder="Price slope peak delta",
+                        value=0.02, style={'margin': '20px'},
                         className='form-control'
                     ),
             ]),

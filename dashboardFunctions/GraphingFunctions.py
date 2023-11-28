@@ -37,20 +37,17 @@ def get_graph_callbacks(app, TradingDf, StratTradingDf):
          Input('graphOverlay', 'value'),
          Input('Graph_MA_method', 'value'),
          Input('graph_trade_method', 'value'),
-         Input('wy_vol_ma', 'value'),
-         Input('wy_vol_slope_ave', 'value'),
-         Input('wy_price_ma', 'value'),
-         Input('wy_price_slope_offset', 'value'),
-         Input('wy_price_slope_ave', 'value'),
-         Input('wy_price_slope_peak_delta', 'value'),
+         Input('wy_vol_ma', 'value'), Input('wy_vol_variation_ma', 'value'), Input('wy_vol_max_var_grad_period', 'value'),
+         Input('wy_price_ma', 'value'), Input('wy_price_slope_offset', 'value'), Input('wy_price_slope_ave', 'value'),
+         Input('wy_price_slope_peak_delta', 'value'), Input('wy_price_slope_peak_delta_window', 'value'),
          Input('wy_accum_time', 'value'),
-         Input('wy_vol_max_slope_period', 'value')
         ]
     )
     def display_candlestick(visframVal, ma_short, ma_long, ma_signal, trade_pct_fee,
                             checklist, graphOverlay, graphMAmethod, graphTradeMethod,
-                            wy_vol_ma, wy_vol_slope_ave, wy_price_ma, wy_price_slop_offset, wy_price_slope_ave,
-                            wy_price_slope_peak_delta, wy_accum_time, wy_vol_max_slope_period):
+                            wy_vol_ma, wy_vol_variation_ma, wy_vol_max_var_grad_period,
+                            wy_price_ma, wy_price_slop_offset, wy_price_slope_ave,
+                            wy_price_slope_peak_delta, wy_price_slope_peak_delta_window, wy_accum_time):
 
         # MACD
         if graphMAmethod == 'MACD' or graphOverlay == 'MACD' or 'MACD' in checklist:  # only calc if needed
@@ -149,8 +146,8 @@ def get_graph_callbacks(app, TradingDf, StratTradingDf):
         elif graphTradeMethod == 'Wyckoff':
 
             Wyckoff_div_display = {'display': 'inline', 'padding': '20px'}
-            TradingDf.check_wyckoff(wy_vol_ma, wy_vol_slope_ave, wy_vol_max_slope_period,
-                                    wy_price_ma, wy_price_slop_offset, wy_price_slope_ave, wy_price_slope_peak_delta,
+            TradingDf.check_wyckoff(wy_vol_ma, wy_vol_variation_ma, wy_vol_max_var_grad_period,
+                                    wy_price_ma, wy_price_slop_offset, wy_price_slope_ave, wy_price_slope_peak_delta, wy_price_slope_peak_delta_window,
                                     wy_accum_time)
             graphOverlay = 'Wyckoff'
 
@@ -168,8 +165,18 @@ def get_graph_callbacks(app, TradingDf, StratTradingDf):
 
             fig.add_trace(go.Bar(x=TradingDf.df['Open time'], y=TradingDf.df['Volume'], marker_color=colors,
                                  name='Volume', yaxis='y2'))
-            fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Vol diff pct roll mean'],
-                                     name='Vol diff pct roll mean', line=dict(color='blue', width=2, dash='dot'),
+            fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Volume Pct Variation'],
+                                     name='Volume Pct Variation', line=dict(color='green', width=2, dash='dot'),
+                                     yaxis='y4'))
+            fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Volume Pct Variation abs'],
+                                     name='Volume Pct Variation abs', line=dict(color='blue', width=2, dash='dot'),
+                                     yaxis='y4'))
+            fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Volume Pct Variation abs ma'],
+                                     name='Volume Pct Variation abs ma', line=dict(color='blue', width=2, dash='longdash'),
+                                     yaxis='y4'))
+            fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Volume Pct Variation abs gradient 1'],
+                                     name='Volume Pct Variation abs gradient 1',
+                                     line=dict(color='blue', width=2, dash='solid'),
                                      yaxis='y4'))
 
 
@@ -179,14 +186,14 @@ def get_graph_callbacks(app, TradingDf, StratTradingDf):
                                      opacity=0.7,
                                      line=dict(color='black', width=2),
                                      name='Price ma', yaxis='y1'), secondary_y=False, row=1, col=1)
-            fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Price Slope pct'],
-                                     name='Price Slope pct', line=dict(color='black', width=2, dash='dot'),
+            fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Price gradient 1'],
+                                     name='Price gradient 1', line=dict(color='black', width=2, dash='dot'),
                                      yaxis='y3'))
-            fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Price Slope pct roll mean'],
-                                     name='Price Slope pct mean', line=dict(color='black', width=2, dash='longdash'),
+            fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Price gradient 1 ma'],
+                                     name='Price gradient 1 ma', line=dict(color='black', width=2, dash='longdash'),
                                      yaxis='y3'))
-            fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Price Slope peak delta'],
-                                     name='Price Slope peak delta', line=dict(color='black', width=2, dash='solid'),
+            fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Price gradient 1 max delta'],
+                                     name='Price gradient 1 max delta', line=dict(color='red', width=2, dash='solid'),
                                      yaxis='y3'))
             fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Accum_Price_Slope_Check'],
                                      name='Accum_Price_Slope_Check', yaxis='y3',
