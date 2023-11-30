@@ -25,7 +25,7 @@ from CollatedDashboardCallbacks import get_callbacks
 
 #### setup dataframe class
 csv_path = 'C:/Users/rory1/PycharmProjects/CryptoBots/BTC_Price_History_Binance/BTCUSDT-1h-PriceHistoryCollatedFull.csv'
-initial_slice = 500
+initial_slice = 250
 TradingDf = TradingData(csv_path, initial_slice)
 StratTradingDf = TradingData(csv_path, 0)
 
@@ -207,10 +207,17 @@ app.layout = html.Div([
                         value=3, style={'margin': '20px'},
                         className='form-control'
                     ),
-                html.P(children='Vol max variation gradient period:', style={'display': 'inline'}),
+                html.P(children='Vol max variation gradient 1 period:', style={'display': 'inline'}),
                 dcc.Input(
-                        id="wy_vol_max_var_grad_period", type="number",
-                        debounce=True, placeholder="Vol max variation gradient period",
+                        id="wy_vol_max_var_grad_period1", type="number",
+                        debounce=True, placeholder="Vol max variation gradient 1 period",
+                        value=5, style={'margin': '20px'},
+                        className='form-control'
+                    ),
+                html.P(children='Vol max variation gradient 2 period:', style={'display': 'inline'}),
+                dcc.Input(
+                        id="wy_vol_max_var_grad_period2", type="number",
+                        debounce=True, placeholder="Vol max variation gradient 2 period",
                         value=5, style={'margin': '20px'},
                         className='form-control'
                     ),

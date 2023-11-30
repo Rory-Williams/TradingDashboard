@@ -89,7 +89,8 @@ class TradingData:
             self.date_idxs.append(date_index)
             self.date_dict[str(date_index)] = date  # used to store timeline labels against indexs
 
-    def check_wyckoff(self, volume_ma, wy_vol_variation_ma, wy_vol_max_var_grad_period,
+
+    def check_wyckoff(self, volume_ma, wy_vol_variation_ma, wy_vol_max_var_grad_period1, wy_vol_max_var_grad_period2,
                       price_ma_window, price_slope_period, price_slope_ma, price_slope_peak_delta, price_slope_peak_delta_window,
                       accum_time):
 
@@ -118,17 +119,17 @@ class TradingData:
         # calc volume ma and % difference of current volume vs ma with
         self.df['Volume ma'] = self.df['Volume'].rolling(volume_ma).mean()
         self.df.loc[
-            self.df['Taker buy base asset volume'] >= self.df['Volume']/2, 'Volume Pct Variation'  # strong buy
+            self.df['Taker buy base asset volume'] >= self.df['Volume']/2, 'Volume Pct Variation corr'  # strong buy
         ] = (self.df['Volume'] - self.df['Volume ma'])/self.df['Volume ma']
         self.df.loc[
-            self.df['Taker buy base asset volume'] < self.df['Volume'] / 2, 'Volume Pct Variation'  # strong sell
+            self.df['Taker buy base asset volume'] < self.df['Volume'] / 2, 'Volume Pct Variation corr'  # strong sell
         ] = (self.df['Volume ma'] - self.df['Volume']) / self.df['Volume ma']
-        self.df['Volume Pct Variation abs'] = (self.df['Volume'] - self.df['Volume ma'])/self.df['Volume ma']
-        self.df['Volume Pct Variation abs ma'] = self.df['Volume Pct Variation abs'].rolling(wy_vol_variation_ma).mean()
-        self.df['Volume Pct Variation abs gradient 1'] = self.df['Volume Pct Variation abs'].rolling(
-            wy_vol_max_var_grad_period).apply(peak_diff_func)
-
-
+        self.df['Volume Pct Variation'] = (self.df['Volume'] - self.df['Volume ma'])/self.df['Volume ma']
+        self.df['Volume Pct Variation ma'] = self.df['Volume Pct Variation'].rolling(wy_vol_variation_ma).mean()
+        self.df['Volume Pct Variation gradient 1'] = self.df['Volume Pct Variation'].rolling(
+            wy_vol_max_var_grad_period1).apply(peak_diff_func)
+        self.df['Volume Pct Variation gradient 2'] = self.df['Volume Pct Variation gradient 1'].rolling(
+            wy_vol_max_var_grad_period2).apply(peak_diff_func)
 
 
         # # define accumulation phase
@@ -140,7 +141,7 @@ class TradingData:
         except:
             pass  # column doesnt exist
         self.df.loc[(self.df['Price gradient 1 max delta'] > price_slope_peak_delta) &
-                    (self.df['Volume Pct Variation abs gradient 1'] > 0),
+                    (self.df['Volume Pct Variation gradient 1'] > 0),
                     'Accum_Price_Slope_Check'] = 0
 
 

@@ -37,7 +37,7 @@ def get_graph_callbacks(app, TradingDf, StratTradingDf):
          Input('graphOverlay', 'value'),
          Input('Graph_MA_method', 'value'),
          Input('graph_trade_method', 'value'),
-         Input('wy_vol_ma', 'value'), Input('wy_vol_variation_ma', 'value'), Input('wy_vol_max_var_grad_period', 'value'),
+         Input('wy_vol_ma', 'value'), Input('wy_vol_variation_ma', 'value'), Input('wy_vol_max_var_grad_period1', 'value'), Input('wy_vol_max_var_grad_period2', 'value'),
          Input('wy_price_ma', 'value'), Input('wy_price_slope_offset', 'value'), Input('wy_price_slope_ave', 'value'),
          Input('wy_price_slope_peak_delta', 'value'), Input('wy_price_slope_peak_delta_window', 'value'),
          Input('wy_accum_time', 'value'),
@@ -45,7 +45,7 @@ def get_graph_callbacks(app, TradingDf, StratTradingDf):
     )
     def display_candlestick(visframVal, ma_short, ma_long, ma_signal, trade_pct_fee,
                             checklist, graphOverlay, graphMAmethod, graphTradeMethod,
-                            wy_vol_ma, wy_vol_variation_ma, wy_vol_max_var_grad_period,
+                            wy_vol_ma, wy_vol_variation_ma, wy_vol_max_var_grad_period1, wy_vol_max_var_grad_period2,
                             wy_price_ma, wy_price_slop_offset, wy_price_slope_ave,
                             wy_price_slope_peak_delta, wy_price_slope_peak_delta_window, wy_accum_time):
 
@@ -146,7 +146,7 @@ def get_graph_callbacks(app, TradingDf, StratTradingDf):
         elif graphTradeMethod == 'Wyckoff':
 
             Wyckoff_div_display = {'display': 'inline', 'padding': '20px'}
-            TradingDf.check_wyckoff(wy_vol_ma, wy_vol_variation_ma, wy_vol_max_var_grad_period,
+            TradingDf.check_wyckoff(wy_vol_ma, wy_vol_variation_ma, wy_vol_max_var_grad_period1, wy_vol_max_var_grad_period2,
                                     wy_price_ma, wy_price_slop_offset, wy_price_slope_ave, wy_price_slope_peak_delta, wy_price_slope_peak_delta_window,
                                     wy_accum_time)
             graphOverlay = 'Wyckoff'
@@ -165,18 +165,22 @@ def get_graph_callbacks(app, TradingDf, StratTradingDf):
 
             fig.add_trace(go.Bar(x=TradingDf.df['Open time'], y=TradingDf.df['Volume'], marker_color=colors,
                                  name='Volume', yaxis='y2'))
+            # fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Volume Pct Variation corr'],
+            #                          name='Volume Pct Variation corr', line=dict(color='green', width=2, dash='dot'),
+            #                          yaxis='y4'))
             fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Volume Pct Variation'],
-                                     name='Volume Pct Variation', line=dict(color='green', width=2, dash='dot'),
+                                     name='Volume Pct Variation', line=dict(color='blue', width=2, dash='dot'),
                                      yaxis='y4'))
-            fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Volume Pct Variation abs'],
-                                     name='Volume Pct Variation abs', line=dict(color='blue', width=2, dash='dot'),
+            fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Volume Pct Variation ma'],
+                                     name='Volume Pct Variation ma', line=dict(color='blue', width=2, dash='longdash'),
                                      yaxis='y4'))
-            fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Volume Pct Variation abs ma'],
-                                     name='Volume Pct Variation abs ma', line=dict(color='blue', width=2, dash='longdash'),
-                                     yaxis='y4'))
-            fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Volume Pct Variation abs gradient 1'],
-                                     name='Volume Pct Variation abs gradient 1',
+            fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Volume Pct Variation gradient 1'],
+                                     name='Volume Pct Variation gradient 1',
                                      line=dict(color='blue', width=2, dash='solid'),
+                                     yaxis='y4'))
+            fig.add_trace(go.Scatter(x=TradingDf.df['Open time'], y=TradingDf.df['Volume Pct Variation gradient 2'],
+                                     name='Volume Pct Variation gradient 2',
+                                     line=dict(color='green', width=2, dash='solid'),
                                      yaxis='y4'))
 
 
